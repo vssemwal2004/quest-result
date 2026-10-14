@@ -72,6 +72,7 @@ export function toTier(doc) {
     color: d.color,
     icon: d.icon,
     sortDirection: d.sortDirection,
+    gridPageCounts: d.gridPageCounts ?? null,
     order: d.order,
     enabled: d.enabled,
   }

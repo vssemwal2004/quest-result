@@ -16,6 +16,7 @@ const tierSchema = new mongoose.Schema(
     color: { type: String, default: '#38bdf8', lowercase: true, match: /^#([0-9a-f]{3}|[0-9a-f]{6})$/i },
     icon: { type: String, default: 'award', enum: TIER_ICONS },
     sortDirection: { type: String, default: 'asc', enum: ['asc', 'desc'] },
+    gridPageCounts: { type: [Number], default: null },
     order: { type: Number, required: true, min: 0, validate: integer },
     enabled: { type: Boolean, default: true },
   },

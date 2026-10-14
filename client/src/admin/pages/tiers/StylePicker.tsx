@@ -9,17 +9,6 @@ function Schematic({ style, color }: { style: DisplayStyle; color: string }) {
   const tile = { background: withAlpha(color, 0.55) }
   switch (style) {
     case 'scroll':
-      return (
-        <div className="relative grid h-full grid-cols-3 gap-1 overflow-hidden px-2 [mask-image:linear-gradient(transparent,#000_25%,#000_75%,transparent)]">
-          {[0, 1, 2].map((c) => (
-            <div key={c} className="flex flex-col gap-1" style={{ transform: `translateY(${-c * 4}px)` }}>
-              {Array.from({ length: 6 }, (_, i) => (
-                <div key={i} className="h-2 rounded-sm" style={tile} />
-              ))}
-            </div>
-          ))}
-        </div>
-      )
     case 'grid':
       return (
         <div className="grid h-full grid-cols-4 grid-rows-3 gap-1 p-2">

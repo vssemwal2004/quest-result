@@ -81,7 +81,7 @@ describe('show state', () => {
     const v0 = await repo.show.version()
     await Promise.all(Array.from({ length: 4 }, () => repo.show.transition(next)))
     const s = await repo.show.get()
-    // intro(1) → grid tier (2 steps) → podium (1 + 3): 4 presses = stage 2 step 1
+    // intro(1) → grid tier (2 steps) → podium (title + 3 reveals + group): 4 presses = stage 2 step 1
     assert.deepEqual([s.stageIndex, s.step], [2, 1])
     assert.equal(s.version, v0 + 4)
     const noop = await repo.show.transition(() => null)

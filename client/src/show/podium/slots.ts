@@ -68,15 +68,18 @@ export interface PodiumSlot {
 
 /**
  * One slot per rank in the tier (at most three): rankFrom → gold center, +1 → silver left, +2 → bronze right.
- * `stage.students` is in reveal order (rank DESC), so the revealed ones are `students.slice(0, step)`.
+ * `stage.students` is in reveal order (rank DESC). Individual steps show one winner;
+ * the last step shows everyone together.
  */
 export function buildSlots(tier: PublicTier, students: PublicStudent[], step: number): PodiumSlot[] {
-  const revealed = students.slice(0, Math.max(0, step))
+  const groupStep = students.length > 1 && step > students.length
+  const revealed = step <= 0 ? [] : groupStep ? students : students.slice(step - 1, step)
   const span = Math.min(3, tier.rankTo - tier.rankFrom + 1)
   return KINDS.slice(0, Math.max(1, span)).map((kind, offset) => {
     const rank = tier.rankFrom + offset
-    const order = revealed.findIndex((s) => s.rank === rank)
-    return { kind, rank, ...LAYOUT[kind], student: order >= 0 ? revealed[order] : null, order }
+    const student = revealed.find((s) => s.rank === rank) ?? null
+    const order = student ? students.findIndex((s) => s.rank === rank) : -1
+    return { kind, rank, ...LAYOUT[kind], student, order }
   })
 }
 

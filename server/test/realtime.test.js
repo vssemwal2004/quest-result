@@ -63,7 +63,7 @@ describe('socket.io', () => {
     assert.ok(payload.version > initial.version)
     assert.equal(payload.state.step, 0)
 
-    // Reveal the list of the first tier (scroll): the payload now carries its students only.
+    // Reveal the first grid page: the payload now carries that page's students only.
     const reveal = waitFor(socket, 'show:update', (p) => p.state.step === 1)
     await srv.request('POST', '/api/admin/presentation/next', { token })
     const revealed = await reveal

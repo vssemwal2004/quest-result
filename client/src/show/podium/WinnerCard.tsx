@@ -26,12 +26,18 @@ export function WinnerCard({
   label,
   scale,
   instant,
+  solo,
+  prizeAmount,
+  prize,
 }: {
   student: PublicStudent
   kind: SlotKind
   label: string
   scale: number
   instant: boolean
+  solo: boolean
+  prizeAmount: string
+  prize: string
 }) {
   const metal = METAL[kind]
   const champion = kind === 'gold'
@@ -39,6 +45,7 @@ export function WinnerCard({
   const avatar = champion ? 6.6 : 5.4
   const Icon = champion ? Crown : Medal
   const school = [student.school, student.city].filter(Boolean).join(' · ')
+  const hasPrize = Boolean(prizeAmount.trim() || prize.trim())
 
   // The plain wrapper owns the anchor offset; framer-motion owns the inner transform.
   return (
@@ -112,6 +119,28 @@ export function WinnerCard({
             >
               {school}
             </p>
+            {solo && student.score != null && (
+              <span className="font-tech font-bold text-cyan-200" style={{ fontSize: s(0.9), marginTop: s(0.6) }}>
+                Score {student.score}
+              </span>
+            )}
+            {solo && hasPrize && (
+              <div className="flex w-full flex-col items-center border-t border-white/20 text-center" style={{ marginTop: s(0.9), paddingTop: s(0.8), gap: s(0.25) }}>
+                <span className="font-tech font-bold uppercase text-white/60" style={{ fontSize: s(0.72), letterSpacing: '0.12em' }}>
+                  Tier prizes
+                </span>
+                {prizeAmount.trim() && (
+                  <span className="font-display font-black text-gold-300" style={{ fontSize: s(1.35), lineHeight: 1.1 }}>
+                    {prizeAmount}
+                  </span>
+                )}
+                {prize.trim() && (
+                  <span className="font-sans font-semibold text-white/85" style={{ fontSize: s(0.82), lineHeight: 1.2 }}>
+                    {prize}
+                  </span>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </motion.div>

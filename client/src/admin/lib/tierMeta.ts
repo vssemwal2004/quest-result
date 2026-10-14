@@ -5,7 +5,6 @@ import {
   LayoutGrid,
   Medal,
   Rocket,
-  Rows3,
   Sparkles,
   Star,
   Trophy,
@@ -33,13 +32,13 @@ export interface StyleMeta {
 
 export const STYLE_META: Record<DisplayStyle, StyleMeta> = {
   scroll: {
-    label: 'Scroll wall',
-    description: 'All names glide up a multi-column wall. Best for large groups (30+).',
-    icon: Rows3,
+    label: 'Grid',
+    description: 'Previously saved wall tiers now show as manually advanced grid pages.',
+    icon: LayoutGrid,
   },
   grid: {
     label: 'Grid',
-    description: 'Every card appears at once in a staggered grid. Best for 10–40 names.',
+    description: 'Show up to 12 students per balanced page. Next and Previous change pages manually.',
     icon: LayoutGrid,
   },
   spotlight: {
@@ -54,7 +53,7 @@ export const STYLE_META: Record<DisplayStyle, StyleMeta> = {
   },
 }
 
-export const STYLE_OPTIONS = Object.keys(STYLE_META) as DisplayStyle[]
+export const STYLE_OPTIONS: DisplayStyle[] = ['grid', 'spotlight', 'podium']
 
 export const ACCENT_SWATCHES = [
   '#38bdf8',

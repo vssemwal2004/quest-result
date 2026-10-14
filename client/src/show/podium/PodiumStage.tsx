@@ -49,7 +49,8 @@ function celebrateChampion(fire: (o: confetti.Options) => void, quality: Quality
 
 /**
  * Podium tier: a real 3D podium in its own transparent canvas (the shared background shows through).
- * step 0 = empty podium + title; step k = first k students revealed (reveal order rank 3 → 2 → 1).
+ * step 0 = empty podium + title; steps 1..n spotlight one winner (rank 3 → 2 → 1);
+ * the final step brings all winners together.
  */
 export function PodiumStage({ stage, step, quality, reducedMotion }: StageProps) {
   const tier = stage.tier
@@ -80,11 +81,14 @@ export function PodiumStage({ stage, step, quality, reducedMotion }: StageProps)
     const prev = prevStep.current
     prevStep.current = step
     if (step <= prev) return
-    const newest = slots.find((s) => s.order === step - 1)
-    if (!newest) return
+    const newest = step <= stage.studentCount ? slots.find((s) => s.order === step - 1) : null
+    if (!newest) {
+      setFocus(null)
+      return
+    }
     setFocus({ x: newest.x, id: performance.now() })
     if (newest.kind === 'gold' && !reducedMotion) timers.current.push(...celebrateChampion(fire, quality))
-  }, [step, slots, fire, quality, reducedMotion])
+  }, [step, slots, fire, quality, reducedMotion, stage.studentCount])
 
   if (!tier) return null
 
@@ -108,6 +112,7 @@ export function PodiumStage({ stage, step, quality, reducedMotion }: StageProps)
               unitPx={unitPx}
               focus={focus}
               instantBelow={instantBelow.current}
+              solo={step > 0 && step <= stage.studentCount}
             />
           </Suspense>
         </Canvas>

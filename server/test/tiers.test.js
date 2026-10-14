@@ -26,9 +26,9 @@ describe('tiers', () => {
     assert.deepEqual(
       list.map((t) => [t.name, t.rankFrom, t.rankTo, t.style, t.color, t.icon, t.order]),
       [
-        ['Merit Achievers', 151, 200, 'scroll', '#38bdf8', 'award', 0],
-        ['Rising Innovators', 101, 150, 'scroll', '#60a5fa', 'star', 1],
-        ['AI Explorers', 21, 100, 'scroll', '#818cf8', 'rocket', 2],
+        ['Merit Achievers', 151, 200, 'grid', '#38bdf8', 'award', 0],
+        ['Rising Innovators', 101, 150, 'grid', '#60a5fa', 'star', 1],
+        ['AI Explorers', 21, 100, 'grid', '#818cf8', 'rocket', 2],
         ['Top 20 Stars', 4, 20, 'spotlight', '#c084fc', 'medal', 3],
         ['The Champions', 1, 3, 'podium', '#facc15', 'crown', 4],
       ],
@@ -89,6 +89,30 @@ describe('tiers', () => {
     }
   })
 
+  it('saves manual grid pages and rejects incomplete or oversized groups', async () => {
+    const created = await api('POST', '/api/admin/tiers', {
+      json: newTier({ rankFrom: 300, rankTo: 319, gridPageCounts: [10, 10] }),
+    })
+    assert.equal(created.status, 201)
+    assert.deepEqual(created.body.tier.gridPageCounts, [10, 10])
+    await addStudents(api, null, range(300, 319).map((rank) => student(rank)))
+    const show = (await api('GET', '/api/admin/presentation')).body
+    const stage = show.stages.find((s) => s.tier?.id === created.body.tier.id)
+    assert.deepEqual(stage.pageEnds, [10, 20])
+    assert.equal(stage.stepCount, 3)
+
+    const updated = await api('PUT', `/api/admin/tiers/${created.body.tier.id}`, { json: { gridPageCounts: [5, 5, 5, 5] } })
+    assert.equal(updated.status, 200)
+    assert.deepEqual(updated.body.tier.gridPageCounts, [5, 5, 5, 5])
+    for (const counts of [[12, 9], [13, 7], []]) {
+      const rejected = await api('PUT', `/api/admin/tiers/${created.body.tier.id}`, { json: { gridPageCounts: counts } })
+      assert.equal(rejected.status, 400)
+    }
+    const restored = await api('PUT', `/api/admin/tiers/${created.body.tier.id}`, { json: { gridPageCounts: null } })
+    assert.equal(restored.status, 200)
+    assert.equal(restored.body.tier.gridPageCounts, null)
+  })
+
   it('lists and applies presets', async () => {
     const { presets } = (await api('GET', '/api/admin/tiers/presets')).body
     assert.deepEqual(
@@ -101,7 +125,7 @@ describe('tiers', () => {
     assert.deepEqual(
       focus.body.tiers.map((t) => [t.rankFrom, t.rankTo, t.style]),
       [
-        [11, 200, 'scroll'],
+        [11, 200, 'grid'],
         [4, 10, 'spotlight'],
         [1, 3, 'podium'],
       ],
@@ -168,7 +192,7 @@ describe('presentation and overview', () => {
     assert.deepEqual(pos(await step('next')), [2, 0])
     assert.deepEqual(pos(await step('prev')), [1, 1])
     assert.deepEqual(pos(await step('goto', { stageIndex: 3 })), [3, 0])
-    assert.deepEqual(pos(await step('prev')), [2, 3])
+    assert.deepEqual(pos(await step('prev')), [2, 4])
     assert.deepEqual(pos(await step('goto', { stageIndex: 42, step: 9 })), [3, 0])
     assert.deepEqual(pos(await step('next')), [3, 0])
     assert.deepEqual(pos(await step('reset')), [0, 0])

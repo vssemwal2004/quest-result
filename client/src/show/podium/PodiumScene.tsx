@@ -33,6 +33,7 @@ export function PodiumScene({
   unitPx,
   focus,
   instantBelow,
+  solo,
 }: {
   tier: PublicTier
   slots: PodiumSlot[]
@@ -44,6 +45,7 @@ export function PodiumScene({
   focus: CameraFocus | null
   /** Slots revealed at a reveal index below this appear without an entrance animation. */
   instantBelow: number
+  solo: boolean
 }) {
   const width = useThree((s) => s.size.width)
   const height = useThree((s) => s.size.height)
@@ -94,6 +96,9 @@ export function PodiumScene({
                 label={medalLabel(tier, slot)}
                 scale={cardScale}
                 instant={slot.order < instantBelow}
+                solo={solo}
+                prizeAmount={tier.prizeAmount}
+                prize={tier.prize}
               />
             )}
           </AnimatePresence>

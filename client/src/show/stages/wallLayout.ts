@@ -19,18 +19,3 @@ export function rowsThatFit(heightPx: number, unitPx: number, size: CardSize): n
 export function stackHeight(rows: number, unitPx: number, size: CardSize): number {
   return rows <= 0 ? 0 : rows * CARD[size].height * unitPx + (rows - 1) * CARD_GAP * unitPx
 }
-
-/** Split into `parts` contiguous, balanced chunks (first chunks get the extra item). */
-export function chunk<T>(items: readonly T[], parts: number): T[][] {
-  const n = Math.max(1, parts)
-  const base = Math.floor(items.length / n)
-  const extra = items.length % n
-  const out: T[][] = []
-  let i = 0
-  for (let c = 0; c < n; c++) {
-    const len = base + (c < extra ? 1 : 0)
-    out.push(items.slice(i, i + len))
-    i += len
-  }
-  return out
-}

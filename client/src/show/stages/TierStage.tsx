@@ -1,21 +1,23 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import type { StageProps } from '@/show/contracts'
+import { gridPageBounds } from '@/show/gridPages'
+import { CardGrid } from './CardGrid'
 import { SpotlightReveal } from './SpotlightReveal'
 import { StageFrame } from './StageFrame'
-import { StudentWall } from './StudentWall'
 import { TierHeader } from './TierHeader'
 import { TierTitleCard } from './TierTitleCard'
 import { u } from './units'
 
 /**
- * Tier stage for styles scroll | grid | spotlight (podium has its own renderer).
- * step 0 → title card; step ≥ 1 → list (scroll/grid) or the first `step` students (spotlight).
+ * Tier stage for grid | spotlight (podium has its own renderer).
+ * step 0 → title card; grid steps show one operator-controlled page.
  * What to show is decided from `step` only; `stage.students` may be spoiler-filtered.
  */
-export function TierStage({ stage, step, settings, quality, reducedMotion }: StageProps) {
+export function TierStage({ stage, step, quality, reducedMotion }: StageProps) {
   const tier = stage.tier
   if (!tier) return null
   const showTitle = step <= 0
+  const gridPage = gridPageBounds(stage, step)
 
   return (
     <StageFrame accentColor={tier.color}>
@@ -50,11 +52,10 @@ export function TierStage({ stage, step, settings, quality, reducedMotion }: Sta
             ) : (
               <>
                 <TierHeader tier={tier} studentCount={stage.studentCount} />
-                <StudentWall
-                  students={stage.students}
-                  mode={tier.style === 'scroll' ? 'scroll' : 'grid'}
-                  speed={settings.autoScrollSpeed}
-                  reducedMotion={reducedMotion}
+                <CardGrid
+                  students={stage.students.slice(gridPage.start, gridPage.end)}
+                  page={step}
+                  pageCount={stage.stepCount - 1}
                 />
               </>
             )}

@@ -33,6 +33,8 @@ export interface Tier {
   color: string
   icon: TierIcon
   sortDirection: 'asc' | 'desc'
+  /** Null uses balanced pages; an array sets ranks per page in reveal order. */
+  gridPageCounts: number[] | null
   order: number
   enabled: boolean
 }
@@ -81,6 +83,10 @@ export interface ShowStage {
   stepCount: number
   tier: PublicTier | null
   studentCount: number
+  /** Number of students per manually advanced grid page. */
+  pageSize?: number
+  /** Cumulative end offset for each balanced grid page. */
+  pageEnds?: number[]
   students: PublicStudent[]
 }
 

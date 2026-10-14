@@ -37,7 +37,7 @@ import { DEFAULT_ADMIN, defaultSettings } from '../src/seed.js'
 
 const MIME = { jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp', svg: 'image/svg+xml' }
 const LEGACY_URL_RE = /^\/uploads\/(photos|branding)\/([^/\\]+)$/
-const TIER_FIELDS = ['name', 'subtitle', 'rankFrom', 'rankTo', 'prize', 'prizeAmount', 'style', 'color', 'icon', 'sortDirection', 'order', 'enabled']
+const TIER_FIELDS = ['name', 'subtitle', 'rankFrom', 'rankTo', 'prize', 'prizeAmount', 'style', 'color', 'icon', 'sortDirection', 'gridPageCounts', 'order', 'enabled']
 const SETTINGS_FIELDS = Object.keys(defaultSettings()).filter((k) => k !== 'logoUrl' && k !== 'updatedAt')
 
 const pick = (obj, keys) => Object.fromEntries(keys.filter((k) => obj?.[k] !== undefined).map((k) => [k, obj[k]]))

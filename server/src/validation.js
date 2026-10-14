@@ -80,6 +80,7 @@ const tierObject = z.object({
   color: hexColor.default('#38bdf8'),
   icon: z.enum(TIER_ICONS).default('award'),
   sortDirection: z.enum(['asc', 'desc']).default('asc'),
+  gridPageCounts: z.array(z.number().int().min(1).max(12)).min(1).max(500).nullable().default(null),
   enabled: z.boolean().default(true),
 })
 const TIER_READ_ONLY = ['id', 'order']

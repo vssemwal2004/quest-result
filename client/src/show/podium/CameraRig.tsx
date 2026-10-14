@@ -28,7 +28,11 @@ export function CameraRig({ unitPx, focus, reducedMotion }: { unitPx: number; fo
   const position = useMemo(() => new Vector3(), [])
 
   useEffect(() => {
-    if (!focus || reducedMotion) return
+    if (!focus) {
+      focusUntil.current = 0
+      return
+    }
+    if (reducedMotion) return
     focusX.current = focus.x
     focusUntil.current = performance.now() + FOCUS_MS
   }, [focus, reducedMotion])

@@ -37,7 +37,7 @@ Fonts (self-hosted via @fontsource, works offline at the venue): `font-display` 
 ## Data model (mirrored exactly in `client/src/types.ts`)
 
 ```ts
-type DisplayStyle = 'scroll' | 'grid' | 'spotlight' | 'podium'
+type DisplayStyle = 'grid' | 'spotlight' | 'podium' // stored legacy `scroll` tiers render as grid
 type TierIcon = 'trophy' | 'medal' | 'star' | 'award' | 'crown' | 'rocket' | 'sparkles'
 
 interface Student {
@@ -63,6 +63,7 @@ interface Tier {
   color: string         // hex accent "#38bdf8"
   icon: TierIcon
   sortDirection: 'asc' | 'desc' // display/reveal order inside the tier (ignored for podium)
+  gridPageCounts: number[] | null // null = balanced automatically; otherwise rank counts per page in reveal order
   order: number         // reveal order of tiers (ascending = earlier in show)
   enabled: boolean
 }
@@ -81,7 +82,7 @@ interface Settings {
   finaleTitle: string       // "Congratulations, Champions!"
   finaleMessage: string     // "Thank you for being part of AI Quest 2026"
   spoilerProtection: boolean // default true
-  autoScrollSpeed: number   // px per second for 'scroll' style, 10..200, default 45
+  autoScrollSpeed: number   // legacy setting retained for stored records; scroll wall is no longer used
   showRobot: boolean        // default true
   quality: 'high' | 'medium' | 'low' // 3D quality (bloom, particle counts, dpr)
   updatedAt: string
@@ -89,7 +90,8 @@ interface Settings {
 ```
 
 Validation (server, zod): enabled tiers must not overlap in rank ranges (409 `TIER_OVERLAP`);
-podium tiers must span ≤ 3 ranks (400). Student ranks unique (409 `RANK_TAKEN`).
+podium tiers must span ≤ 3 ranks (400). Manual grid counts must total the tier's rank span and each page
+must contain 1–12 ranks. Student ranks unique (409 `RANK_TAKEN`).
 
 ## Show model — server is the single source of truth
 
@@ -101,14 +103,14 @@ Step counts per stage:
 | Stage | stepCount | Meaning of `step` |
 |---|---|---|
 | intro | 1 | 0 = intro with Start button |
-| tier `scroll` / `grid` | 2 | 0 = tier title card (name, ranks, prize), 1 = list of all students |
+| tier `grid` | 1 + number of nonempty pages | 0 = tier title card (name, ranks, prize); k ≥ 1 = page k of up to 12 students, balanced automatically or grouped by manual rank counts, advanced only by Next/Previous |
 | tier `spotlight` | 1 + n | 0 = title card, k (1..n) = first k students revealed one-by-one |
-| tier `podium` | 1 + n (n ≤ 3) | 0 = empty podium + title, k = first k revealed (order rank 3 → 2 → 1) |
+| tier `podium` | 1 + n + 1 when n > 1 (n ≤ 3) | 0 = empty podium + title, k (1..n) = one winner spotlighted (order rank 3 → 2 → 1), final step = all winners together |
 | finale | 1 | 0 = congratulations / thank you |
 
 (n = number of students whose rank is inside the tier range.)
 
-**Student order inside a stage (`stage.students`)**: `scroll`/`grid`/`spotlight` → by rank per
+**Student order inside a stage (`stage.students`)**: `grid`/`spotlight` → by rank per
 `tier.sortDirection` (asc = 1,2,3…; desc = …3,2,1). `podium` → always rank DESC (3, 2, 1 = reveal order).
 
 **Navigation** (server):
@@ -119,16 +121,17 @@ Step counts per stage:
 
 **Spoiler protection** (when `settings.spoilerProtection` is true, the PUBLIC payload only contains
 revealed students): stages before the current one → all students; future stages → `students: []`
-(but `studentCount` is still given); current stage → `scroll`/`grid`: all if `step >= 1`, else `[]`;
-`spotlight`/`podium`: the first `step` students of the reveal order. When protection is off, every
+(but `studentCount` is still given); current grid stage → students through the current page's cumulative end;
+`spotlight`/`podium`: the first `step` students of the reveal order (the podium's final group step receives all). When protection is off, every
 stage contains all of its students.
 **Clients must ALWAYS decide what to render from `stageIndex` / `step`, never from `students.length`.**
 (Render rule: past stage → fully revealed; current tier stage → `step === 0` title card, list visible when
-`step >= 1`; spotlight/podium show `students.slice(0, step)`.)
+`step >= 1`; grid shows the current page using `stage.pageEnds`; spotlight shows `students.slice(0, step)`;
+podium shows only the current winner until its final group step.)
 
 ```ts
 interface PublicStudent { id: string; rank: number; name: string; school: string; city: string | null; score: number | null; photoUrl: string | null }
-interface PublicTier { id, name, subtitle, rankFrom, rankTo, prize, prizeAmount, style, color, icon, sortDirection } // Tier minus order/enabled
+interface PublicTier { id, name, subtitle, rankFrom, rankTo, prize, prizeAmount, style, color, icon, sortDirection, gridPageCounts } // Tier minus order/enabled
 type StageType = 'intro' | 'tier' | 'finale'
 interface ShowStage {
   index: number; type: StageType; key: string /* 'intro' | 'tier:<id>' | 'finale' */
@@ -211,12 +214,12 @@ If any row is invalid and `dryRun=false`, nothing is written (400 `IMPORT_INVALI
 - Admin user `a@gmail.com` / `123456` (bcrypt hash stored in db). Change via Settings → Account.
 - Settings as in the defaults above.
 - Tier preset `classic-5` (in reveal order):
-  1. "Merit Achievers" 151–200 · scroll · asc · `#38bdf8` · award · prize "Certificate of Merit"
-  2. "Rising Innovators" 101–150 · scroll · asc · `#60a5fa` · star · "Certificate of Excellence"
-  3. "AI Explorers" 21–100 · scroll · asc · `#818cf8` · rocket · "Certificate + Exciting Goodies"
+  1. "Merit Achievers" 151–200 · grid · asc · `#38bdf8` · award · prize "Certificate of Merit"
+  2. "Rising Innovators" 101–150 · grid · asc · `#60a5fa` · star · "Certificate of Excellence"
+  3. "AI Explorers" 21–100 · grid · asc · `#818cf8` · rocket · "Certificate + Exciting Goodies"
   4. "Top 20 Stars" 4–20 · spotlight · desc · `#c084fc` · medal · "Merit Scholarship + Trophy"
   5. "The Champions" 1–3 · podium · `#facc15` · crown · prize "Cash Prizes + Exciting Scholarships", prizeAmount "Up to ₹1 Lakh"
-- Other presets: `focus-top-10` (11–200 scroll, 4–10 spotlight, 1–3 podium) and `quick-3` (4–200 grid, 1–3 podium).
+- Other presets: `focus-top-10` (11–200 grid, 4–10 spotlight, 1–3 podium) and `quick-3` (4–200 grid, 1–3 podium).
 - No students by default. `npm run seed:demo` (in `server/`) inserts 200 clearly-fake demo students for rehearsal.
 
 ## Show UX flow
@@ -226,10 +229,11 @@ If any row is invalid and `dryRun=false`, nothing is written (400 `IMPORT_INVALI
    handwritten lines, glowing professional **Reveal Results** button (only for a logged-in admin on that
    screen; others see "The reveal begins shortly…" pulse). Click → 3-2-1 warp countdown → `next`.
 2. **Tier title card** (step 0): rank range, tier name, prize/amount, accent color, icon, 3D glass card.
-3. **Tier list** (step 1): `scroll` = multi-column smooth auto-scrolling marquee of student cards with
-   fade masks; `grid` = staggered grid; `spotlight` = big hero card for the newest reveal + revealed wall.
-4. **Podium** — real three.js 3D podium (gold center/silver left/bronze right), spotlights, reveal 3 → 2 → 1
-   with camera moves; name + school + photo cards above blocks; confetti when #1 lands.
+3. **Tier reveal**: `grid` = manually advanced pages of up to 12 student cards; `spotlight` = big hero card
+   for the newest reveal + revealed wall. Saved legacy `scroll` tiers display as grid pages.
+4. **Podium** — real three.js 3D podium (gold center/silver left/bronze right), spotlights, individual reveals 3 → 2 → 1
+   with camera moves; each winner's name, school, photo, optional score, and tier prize appear together. A final step
+   displays all podium winners together; confetti lands with #1's individual reveal.
 5. **Finale** — congratulations to all `totalWinners`, thanks, contact line.
 - HUD: bottom stage progress rail, live/connection dot, fullscreen (F), admin-only controls
   (← / → / Space / PageUp/PageDown — presentation clicker compatible). Cursor hides after 3 s idle.

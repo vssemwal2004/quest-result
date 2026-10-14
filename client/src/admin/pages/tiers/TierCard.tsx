@@ -120,6 +120,9 @@ export function TierCard({
               {style.label}
             </span>
           </Badge>
+          {(tier.style === 'grid' || tier.style === 'scroll') && (
+            <Badge tone="neutral">{tier.gridPageCounts ? `${tier.gridPageCounts.length} manual pages` : 'Balanced pages'}</Badge>
+          )}
           {tier.style !== 'podium' && <Badge tone="neutral">{tier.sortDirection === 'asc' ? 'Ascending' : 'Descending'}</Badge>}
           <Badge tone={studentCount === undefined ? 'neutral' : studentCount >= expected ? 'green' : studentCount === 0 ? 'amber' : 'blue'}>
             {studentCount ?? '…'} / {expected} students

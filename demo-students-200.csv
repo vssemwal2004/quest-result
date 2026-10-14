@@ -1,0 +1,201 @@
+﻿rank,name,school,city,score
+1,Aadhya Chauhan,Maple Leaf Academy,Rishikesh,99.6
+2,Atharv Kapoor,Cedar Grove Senior Secondary School,Dehradun,99.4
+3,Vihaan Mehta,Sunrise Convent School,Rishikesh,99.2
+4,Yash Nautiyal,Blue Bells Senior Secondary School,Dehradun,99
+5,Shaurya Singh,Valley Crest Academy,Vikasnagar,98.8
+6,Nidhi Singh,Bright Future Public School,Haldwani,98.7
+7,Tanvi Yadav,Valley Crest Academy,Haridwar,98.5
+8,Aditya Thapa,Golden Gate Academy,Nainital,98.3
+9,Ved Kapoor,Lotus Valley Academy,Dehradun,98.1
+10,Zoya Pant,Little Flower Convent School,Haldwani,97.9
+11,Myra Pant,Maple Leaf Academy,Srinagar (Garhwal),97.8
+12,Nidhi Rana,Evergreen Public School,Saharanpur,97.6
+13,Tanvi Kumar,Himalayan Heights Public School,Rishikesh,97.4
+14,Vihaan Bahuguna,Riverside Academy,Rishikesh,97.2
+15,Myra Rana,Valley Crest Academy,Srinagar (Garhwal),97.1
+16,Aarav Kumar,Deodar Public School,Roorkee,96.9
+17,Navya Kandari,Deodar Public School,Kotdwar,96.7
+18,Ved Pandey,Valley Crest Academy,Vikasnagar,96.5
+19,Saanvi Semwal,Silver Oak Public School,Kotdwar,96.4
+20,Samar Kandari,Sunrise Convent School,Rudrapur,96.2
+21,Zoya Yadav,Cedar Grove Senior Secondary School,Pithoragarh,96
+22,Manav Pant,Valley Crest Academy,Dehradun,95.8
+23,Ira Bisht,Maple Leaf Academy,Roorkee,95.6
+24,Atharv Chauhan,Deodar Public School,Nainital,95.5
+25,Aditya Bhatt,Deodar Public School,Kotdwar,95.3
+26,Riya Mishra,Silver Oak Public School,Rudrapur,95.1
+27,Atharv Negi,Morning Star School,Rishikesh,94.9
+28,Aryan Kumar,Riverside Academy,Rishikesh,94.7
+29,Arnav Dhyani,Mountain View School,Dehradun,94.6
+30,Navya Rana,Lotus Valley Academy,Rudrapur,94.3
+31,Navya Kapoor,Evergreen Public School,Mussoorie,94.2
+32,Sara Mishra,Lotus Valley Academy,Mussoorie,94
+33,Diya Bisht,Lotus Valley Academy,Haridwar,93.8
+34,Aadhya Semwal,Silver Oak Public School,Roorkee,93.7
+35,Tanvi Kapoor,Sunrise Convent School,Roorkee,93.5
+36,Nikhil Bahuguna,Golden Gate Academy,Rishikesh,93.3
+37,Dhruv Bhatt,Blue Bells Senior Secondary School,Haldwani,93.1
+38,Ved Uniyal,Evergreen Public School,Saharanpur,92.9
+39,Kavya Pant,Pinewood International School,Haridwar,92.7
+40,Pranav Bisht,Himalayan Heights Public School,Haldwani,92.6
+41,Aarav Kapoor,Green Valley Senior Secondary School,Kashipur,92.4
+42,Vihaan Bhatt,Bright Future Public School,Nainital,92.2
+43,Myra Kandari,Harmony International School,Nainital,92
+44,Aadhya Joshi,Little Flower Convent School,Kotdwar,91.8
+45,Riya Chauhan,Golden Gate Academy,Haridwar,91.6
+46,Meher Kapoor,Sunrise Convent School,Vikasnagar,91.5
+47,Aarohi Dobhal,Maple Leaf Academy,Pithoragarh,91.3
+48,Uday Bhatt,Golden Gate Academy,Srinagar (Garhwal),91.1
+49,Ira Pant,Valley Crest Academy,Kashipur,90.9
+50,Harsh Khan,Valley Crest Academy,Roorkee,90.7
+51,Pranav Kapoor,Lotus Valley Academy,Pithoragarh,90.6
+52,Diya Yadav,Riverside Academy,Pithoragarh,90.4
+53,Nikhil Pandey,Evergreen Public School,Dehradun,90.2
+54,Aarohi Bisht,Evergreen Public School,Almora,90
+55,Aarohi Bahuguna,Starlight Convent School,Vikasnagar,89.9
+56,Tanmay Khan,Harmony International School,Vikasnagar,89.7
+57,Uday Sharma,Blue Bells Senior Secondary School,Roorkee,89.5
+58,Sai Semwal,Blue Bells Senior Secondary School,Haridwar,89.3
+59,Harsh Rana,Maple Leaf Academy,Rishikesh,89.1
+60,Ayaan Rana,Deodar Public School,Kotdwar,89
+61,Kartik Nautiyal,Mountain View School,Nainital,88.8
+62,Kartik Uniyal,Rising Sun Public School,Nainital,88.6
+63,Vihaan Rawat,Evergreen Public School,Haldwani,88.4
+64,Kabir Bahuguna,Snow Peak Public School,Dehradun,88.2
+65,Riya Agarwal,Sunrise Convent School,Mussoorie,88.1
+66,Parth Saxena,Green Valley Senior Secondary School,Saharanpur,87.9
+67,Kavya Khan,Harmony International School,Saharanpur,87.7
+68,Ayaan Verma,Pinewood International School,Pithoragarh,87.5
+69,Samar Singh,Evergreen Public School,Mussoorie,87.3
+70,Aditya Khan,Bright Future Public School,Mussoorie,87.2
+71,Kartik Gupta,Bright Future Public School,Almora,87
+72,Ayaan Nautiyal,Morning Star School,Mussoorie,86.8
+73,Ishaan Bahuguna,Lotus Valley Academy,Almora,86.6
+74,Myra Sharma,Golden Gate Academy,Saharanpur,86.4
+75,Ishita Chauhan,Lotus Valley Academy,Nainital,86.2
+76,Yash Joshi,New Horizon International School,Kotdwar,86.1
+77,Kavya Saxena,Green Valley Senior Secondary School,Mussoorie,85.9
+78,Ananya Chauhan,Snow Peak Public School,Haridwar,85.7
+79,Myra Gupta,Mountain View School,Nainital,85.5
+80,Aditya Rawat,Sunrise Convent School,Saharanpur,85.4
+81,Nikhil Bisht,Valley Crest Academy,Dehradun,85.2
+82,Kartik Negi,Golden Gate Academy,Pithoragarh,85
+83,Kavya Rawat,Mountain View School,Dehradun,84.8
+84,Saanvi Mishra,Maple Leaf Academy,Mussoorie,84.6
+85,Manav Nautiyal,Starlight Convent School,Srinagar (Garhwal),84.4
+86,Kiara Bhatt,Rising Sun Public School,Srinagar (Garhwal),84.3
+87,Kartik Dobhal,Bright Future Public School,Haridwar,84.1
+88,Manav Bhatt,Himalayan Heights Public School,Mussoorie,83.9
+89,Aarav Saxena,Deodar Public School,Kotdwar,83.7
+90,Tanmay Saxena,Bright Future Public School,Saharanpur,83.6
+91,Navya Pandey,Valley Crest Academy,Vikasnagar,83.4
+92,Shaurya Bhatt,Deodar Public School,Vikasnagar,83.2
+93,Arnav Chauhan,Valley Crest Academy,Kotdwar,83
+94,Dhruv Singh,New Horizon International School,Rudrapur,82.9
+95,Pranav Nautiyal,Silver Oak Public School,Kotdwar,82.7
+96,Aarohi Nautiyal,Riverside Academy,Almora,82.5
+97,Ishita Rana,Deodar Public School,Rudrapur,82.3
+98,Ayaan Kandari,Green Valley Senior Secondary School,Vikasnagar,82.1
+99,Vihaan Nautiyal,Deodar Public School,Haridwar,82
+100,Sai Khan,Bright Future Public School,Mussoorie,81.7
+101,Aryan Agarwal,Snow Peak Public School,Saharanpur,81.6
+102,Diya Mehta,Crystal Valley School,Mussoorie,81.4
+103,Riya Nautiyal,Valley Crest Academy,Saharanpur,81.2
+104,Diya Saxena,Crystal Valley School,Dehradun,81
+105,Navya Verma,Deodar Public School,Nainital,80.8
+106,Tanvi Rawat,Cedar Grove Senior Secondary School,Dehradun,80.7
+107,Rudra Yadav,Crystal Valley School,Mussoorie,80.5
+108,Manav Bahuguna,Lotus Valley Academy,Rudrapur,80.3
+109,Uday Mishra,Green Valley Senior Secondary School,Haldwani,80.1
+110,Myra Kapoor,Deodar Public School,Vikasnagar,79.9
+111,Ishita Pant,Starlight Convent School,Vikasnagar,79.8
+112,Shaurya Chauhan,Deodar Public School,Kashipur,79.6
+113,Tanmay Dobhal,Pinewood International School,Haridwar,79.4
+114,Navya Singh,Valley Crest Academy,Rishikesh,79.2
+115,Pranav Joshi,Valley Crest Academy,Roorkee,79
+116,Aditya Nautiyal,Bright Future Public School,Haridwar,78.9
+117,Kavya Negi,Valley Crest Academy,Pithoragarh,78.7
+118,Kartik Saxena,Morning Star School,Rishikesh,78.5
+119,Atharv Dhyani,Riverside Academy,Nainital,78.3
+120,Diya Gupta,Golden Gate Academy,Haldwani,78.2
+121,Dhruv Mehta,Morning Star School,Pithoragarh,78
+122,Rudra Gupta,Lotus Valley Academy,Almora,77.8
+123,Ishaan Rawat,Deodar Public School,Rishikesh,77.6
+124,Vihaan Kapoor,Morning Star School,Rudrapur,77.5
+125,Kavya Nautiyal,Valley Crest Academy,Almora,77.2
+126,Pranav Mehta,Green Valley Senior Secondary School,Nainital,77.1
+127,Vanya Agarwal,Maple Leaf Academy,Kashipur,76.9
+128,Vanya Dobhal,Little Flower Convent School,Kashipur,76.7
+129,Samar Rana,Maple Leaf Academy,Vikasnagar,76.5
+130,Vivaan Joshi,Deodar Public School,Roorkee,76.4
+131,Sara Tiwari,Mountain View School,Rudrapur,76.2
+132,Pranav Chauhan,Golden Gate Academy,Haldwani,76
+133,Uday Yadav,Golden Gate Academy,Haridwar,75.8
+134,Kartik Mishra,Valley Crest Academy,Haridwar,75.6
+135,Rohan Tiwari,Snow Peak Public School,Rishikesh,75.5
+136,Aarav Sharma,Blue Bells Senior Secondary School,Rudrapur,75.3
+137,Reyansh Nautiyal,Riverside Academy,Almora,75.1
+138,Shreya Verma,Himalayan Heights Public School,Rishikesh,74.9
+139,Uday Rawat,Snow Peak Public School,Haldwani,74.7
+140,Anika Yadav,Valley Crest Academy,Roorkee,74.5
+141,Vanya Semwal,Maple Leaf Academy,Roorkee,74.4
+142,Aditya Kumar,Bright Future Public School,Rudrapur,74.2
+143,Aryan Dhyani,Little Flower Convent School,Dehradun,74
+144,Kabir Dhyani,Pinewood International School,Vikasnagar,73.8
+145,Vivaan Uniyal,Golden Gate Academy,Haldwani,73.7
+146,Riya Dobhal,Deodar Public School,Rudrapur,73.5
+147,Yash Saxena,Green Valley Senior Secondary School,Rishikesh,73.3
+148,Ishaan Verma,Golden Gate Academy,Vikasnagar,73.1
+149,Ananya Kandari,Evergreen Public School,Almora,72.9
+150,Vivaan Kapoor,Bright Future Public School,Rishikesh,72.7
+151,Shreya Dhyani,Golden Gate Academy,Pithoragarh,72.6
+152,Aarohi Yadav,Maple Leaf Academy,Saharanpur,72.4
+153,Sai Verma,Morning Star School,Kashipur,72.2
+154,Atharv Tiwari,Silver Oak Public School,Mussoorie,72
+155,Kabir Verma,Deodar Public School,Rudrapur,71.9
+156,Arnav Nautiyal,Valley Crest Academy,Mussoorie,71.7
+157,Riya Bhatt,Himalayan Heights Public School,Nainital,71.5
+158,Vihaan Pandey,Riverside Academy,Rudrapur,71.3
+159,Shreya Agarwal,Green Valley Senior Secondary School,Pithoragarh,71.1
+160,Aarohi Khan,Silver Oak Public School,Kotdwar,71
+161,Ananya Sharma,Bright Future Public School,Kashipur,70.8
+162,Aarav Rana,Evergreen Public School,Dehradun,70.6
+163,Aadhya Mehta,Starlight Convent School,Kashipur,70.4
+164,Diya Thapa,Little Flower Convent School,Kotdwar,70.2
+165,Saanvi Dhyani,Himalayan Heights Public School,Kotdwar,70.1
+166,Kabir Gupta,Valley Crest Academy,Almora,69.9
+167,Ira Kumar,Valley Crest Academy,Rudrapur,69.7
+168,Ishita Kandari,New Horizon International School,Rishikesh,69.5
+169,Riya Bisht,Maple Leaf Academy,Almora,69.4
+170,Kiara Mishra,Maple Leaf Academy,Nainital,69.2
+171,Tanmay Pant,Crystal Valley School,Rudrapur,69
+172,Krishna Dobhal,Starlight Convent School,Srinagar (Garhwal),68.8
+173,Aditya Mishra,Golden Gate Academy,Kashipur,68.6
+174,Harsh Kandari,Lotus Valley Academy,Saharanpur,68.4
+175,Manav Gupta,Evergreen Public School,Saharanpur,68.2
+176,Zoya Bahuguna,Deodar Public School,Haridwar,68.1
+177,Yash Dobhal,Sunrise Convent School,Kotdwar,67.9
+178,Sai Rana,Valley Crest Academy,Pithoragarh,67.7
+179,Shaurya Bisht,Golden Gate Academy,Rishikesh,67.5
+180,Tanmay Yadav,Valley Crest Academy,Srinagar (Garhwal),67.3
+181,Kartik Singh,Himalayan Heights Public School,Rudrapur,67.2
+182,Ananya Gupta,Green Valley Senior Secondary School,Kashipur,67
+183,Shreya Thapa,Crystal Valley School,Pithoragarh,66.8
+184,Manav Agarwal,Maple Leaf Academy,Mussoorie,66.7
+185,Ved Kandari,Silver Oak Public School,Dehradun,66.4
+186,Arjun Dobhal,Green Valley Senior Secondary School,Haridwar,66.3
+187,Sai Bahuguna,Riverside Academy,Vikasnagar,66.1
+188,Meher Singh,Rising Sun Public School,Roorkee,65.9
+189,Ananya Pant,Little Flower Convent School,Vikasnagar,65.7
+190,Yash Dhyani,Bright Future Public School,Almora,65.5
+191,Riya Uniyal,Riverside Academy,Vikasnagar,65.4
+192,Harsh Semwal,New Horizon International School,Rudrapur,65.2
+193,Ishaan Negi,Sunrise Convent School,Vikasnagar,65
+194,Harsh Mishra,Lotus Valley Academy,Almora,64.8
+195,Kiara Singh,Maple Leaf Academy,Vikasnagar,64.6
+196,Vanya Gupta,Silver Oak Public School,Dehradun,64.5
+197,Aarohi Kapoor,Deodar Public School,Srinagar (Garhwal),64.3
+198,Krishna Joshi,Bright Future Public School,Pithoragarh,64.1
+199,Uday Negi,Valley Crest Academy,Haldwani,63.9
+200,Kabir Joshi,Lotus Valley Academy,Roorkee,63.7

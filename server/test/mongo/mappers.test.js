@@ -15,7 +15,7 @@ after(async () => {
 })
 
 const STUDENT_KEYS = ['id', 'rank', 'name', 'school', 'city', 'score', 'photoUrl', 'createdAt', 'updatedAt']
-const TIER_KEYS = ['id', 'name', 'subtitle', 'rankFrom', 'rankTo', 'prize', 'prizeAmount', 'style', 'color', 'icon', 'sortDirection', 'order', 'enabled']
+const TIER_KEYS = ['id', 'name', 'subtitle', 'rankFrom', 'rankTo', 'prize', 'prizeAmount', 'style', 'color', 'icon', 'sortDirection', 'gridPageCounts', 'order', 'enabled']
 const SETTINGS_KEYS = [
   'eventTitle', 'eventEdition', 'tagline', 'subTagline', 'organization', 'location', 'eventDate', 'contact', 'logoUrl',
   'handwrittenLines', 'finaleTitle', 'finaleMessage', 'spoilerProtection', 'autoScrollSpeed', 'showRobot', 'quality', 'updatedAt',

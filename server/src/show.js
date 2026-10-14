@@ -5,6 +5,31 @@
  */
 
 export const LIST_STYLES = new Set(['scroll', 'grid'])
+export const GRID_PAGE_SIZE = 12
+
+/** Cumulative page ends, spread evenly so the final grid page is not nearly empty. */
+export function gridPageEnds(studentCount) {
+  const pages = Math.max(1, Math.ceil(studentCount / GRID_PAGE_SIZE))
+  const base = Math.floor(studentCount / pages)
+  const extra = studentCount % pages
+  let end = 0
+  return Array.from({ length: pages }, (_, index) => (end += base + (index < extra ? 1 : 0)))
+}
+
+/** Convert manual rank-span page sizes to cumulative student offsets in reveal order. */
+export function manualGridPageEnds(tier, students) {
+  const ends = []
+  const descending = tier.sortDirection === 'desc'
+  let rank = descending ? tier.rankTo : tier.rankFrom
+  let offset = 0
+  for (const count of tier.gridPageCounts) {
+    const edge = descending ? rank - count + 1 : rank + count - 1
+    while (offset < students.length && (descending ? students[offset].rank >= edge : students[offset].rank <= edge)) offset++
+    if (offset > (ends.at(-1) ?? 0)) ends.push(offset) // omit pages with no uploaded students
+    rank = descending ? edge - 1 : edge + 1
+  }
+  return ends.length ? ends : [0]
+}
 
 export function toPublicStudent(s) {
   return { id: s.id, rank: s.rank, name: s.name, school: s.school, city: s.city, score: s.score, photoUrl: s.photoUrl }
@@ -12,7 +37,7 @@ export function toPublicStudent(s) {
 
 export function toPublicTier(t) {
   const { order: _order, enabled: _enabled, ...rest } = t
-  return rest
+  return { ...rest, style: rest.style === 'scroll' ? 'grid' : rest.style }
 }
 
 export const inTier = (tier, rank) => rank >= tier.rankFrom && rank <= tier.rankTo
@@ -32,7 +57,9 @@ export function tierStudents(tier, students) {
 }
 
 export function stepCountFor(style, studentCount) {
-  return LIST_STYLES.has(style) ? 2 : 1 + studentCount
+  if (LIST_STYLES.has(style)) return 1 + gridPageEnds(studentCount).length
+  // The podium ends with a group shot after the individual reveals.
+  return 1 + studentCount + (style === 'podium' && studentCount > 1 ? 1 : 0)
 }
 
 /** `[intro] + enabled tiers by order + [finale]`, each with ALL its students (unfiltered). */
@@ -42,15 +69,19 @@ export function buildStages(db) {
   ]
   for (const tier of enabledTiers(db.tiers)) {
     const students = tierStudents(tier, db.students).map(toPublicStudent)
+    const pageEnds = LIST_STYLES.has(tier.style)
+      ? tier.gridPageCounts?.length ? manualGridPageEnds(tier, students) : gridPageEnds(students.length)
+      : null
     stages.push({
       index: stages.length,
       type: 'tier',
       key: `tier:${tier.id}`,
       title: tier.name,
-      stepCount: stepCountFor(tier.style, students.length),
+      stepCount: pageEnds ? 1 + pageEnds.length : stepCountFor(tier.style, students.length),
       tier: toPublicTier(tier),
       studentCount: students.length,
       students,
+      ...(pageEnds ? { pageSize: GRID_PAGE_SIZE, pageEnds } : {}),
     })
   }
   stages.push({
@@ -110,10 +141,8 @@ export function filterForPublic(stages, state, settings) {
   return stages.map((stage) => {
     if (stage.index < state.stageIndex || stage.type !== 'tier') return stage
     if (stage.index > state.stageIndex) return { ...stage, students: [] }
-    const visible = LIST_STYLES.has(stage.tier.style)
-      ? state.step >= 1
-        ? stage.students
-        : []
+    const visible = stage.tier.style === 'grid'
+      ? stage.students.slice(0, stage.pageEnds[state.step - 1] ?? 0)
       : stage.students.slice(0, state.step)
     return { ...stage, students: visible }
   })

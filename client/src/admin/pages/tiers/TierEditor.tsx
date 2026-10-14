@@ -13,14 +13,15 @@ import { Segmented } from '../../ui/Segmented'
 import { Toggle } from '../../ui/Toggle'
 import { Spinner } from '../../ui/Spinner'
 import { StylePicker } from './StylePicker'
+import { GridPageEditor } from './GridPageEditor'
 import { TierPreview } from './TierPreview'
 
 type Form = Omit<TierInput, 'rankFrom' | 'rankTo'> & { rankFrom: string; rankTo: string }
 
 function toForm(tier: Tier | null, others: Tier[]): Form {
   if (tier) {
-    const { name, subtitle, prize, prizeAmount, style, color, icon, sortDirection, enabled } = tier
-    return { name, subtitle, prize, prizeAmount, style, color, icon, sortDirection, enabled, rankFrom: String(tier.rankFrom), rankTo: String(tier.rankTo) }
+    const { name, subtitle, prize, prizeAmount, style, color, icon, sortDirection, gridPageCounts, enabled } = tier
+    return { name, subtitle, prize, prizeAmount, style: style === 'scroll' ? 'grid' : style, color, icon, sortDirection, gridPageCounts: style === 'grid' || style === 'scroll' ? gridPageCounts : null, enabled, rankFrom: String(tier.rankFrom), rankTo: String(tier.rankTo) }
   }
   const usedColors = new Set(others.map((t) => t.color.toLowerCase()))
   return {
@@ -30,10 +31,11 @@ function toForm(tier: Tier | null, others: Tier[]): Form {
     rankTo: '',
     prize: '',
     prizeAmount: '',
-    style: 'scroll',
+    style: 'grid',
     color: ACCENT_SWATCHES.find((c) => !usedColors.has(c)) ?? ACCENT_SWATCHES[0],
     icon: 'star',
     sortDirection: 'asc',
+    gridPageCounts: null,
     enabled: true,
   }
 }
@@ -79,7 +81,7 @@ export function TierEditor({ open, tier, allTiers, onClose, onSaved }: TierEdito
 
   const set = <K extends keyof Form>(key: K, value: Form[K]) => {
     setForm((f) => ({ ...f, [key]: value }))
-    if (key === 'rankFrom' || key === 'rankTo' || key === 'style' || key === 'enabled') setServerRangeError(null)
+    if (key === 'rankFrom' || key === 'rankTo' || key === 'style' || key === 'gridPageCounts' || key === 'enabled') setServerRangeError(null)
   }
 
   const from = toInt(form.rankFrom)
@@ -104,6 +106,11 @@ export function TierEditor({ open, tier, allTiers, onClose, onSaved }: TierEdito
                 ? `Overlaps ${conflicts.map((t) => `${t.name} (${t.rankFrom}–${t.rankTo})`).join(', ')}. Change the range or disable one tier.`
                 : null,
     color: isHexColor(form.color) ? null : 'Use a hex colour like #38bdf8.',
+    pages: form.style === 'grid' && form.gridPageCounts !== null && rangeValid && (
+      form.gridPageCounts.length < 1 || form.gridPageCounts.length > 500 ||
+      form.gridPageCounts.some((count) => !Number.isInteger(count) || count < 1 || count > 12) ||
+      form.gridPageCounts.reduce((sum, count) => sum + count, 0) !== to! - from! + 1
+    ) ? 'Manual pages must cover every rank, with 1–12 ranks on each page.' : null,
   }
   const hasErrors = Object.values(errors).some(Boolean)
   const show = (msg: string | null) => (submitted ? msg : null)
@@ -246,7 +253,10 @@ export function TierEditor({ open, tier, allTiers, onClose, onSaved }: TierEdito
         </Section>
 
         <Section title="Display style">
-          <StylePicker value={form.style} onChange={(s) => set('style', s)} color={accent} />
+          <StylePicker value={form.style} onChange={(style) => {
+            setForm((current) => ({ ...current, style, gridPageCounts: style === 'grid' ? current.gridPageCounts : null }))
+            setServerRangeError(null)
+          }} color={accent} />
           <div>
             <p className="label">Reveal order inside tier</p>
             <Segmented
@@ -265,6 +275,16 @@ export function TierEditor({ open, tier, allTiers, onClose, onSaved }: TierEdito
                 : 'The order names appear in the list and in one-by-one reveals. Descending builds suspense towards the best rank.'}
             </p>
           </div>
+          {form.style === 'grid' && (
+            <GridPageEditor
+              rankFrom={from}
+              rankTo={to}
+              direction={form.sortDirection}
+              counts={form.gridPageCounts}
+              onChange={(counts) => set('gridPageCounts', counts)}
+              error={show(errors.pages)}
+            />
+          )}
         </Section>
 
         <Section title="Look">

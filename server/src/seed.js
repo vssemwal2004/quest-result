@@ -40,6 +40,7 @@ function tier(name, rankFrom, rankTo, style, color, icon, prize, extra = {}) {
     color,
     icon,
     sortDirection: style === 'spotlight' || style === 'podium' ? 'desc' : 'asc',
+    gridPageCounts: null,
     enabled: true,
     ...extra,
   }
@@ -55,11 +56,11 @@ export const TIER_PRESETS = [
   {
     key: 'classic-5',
     name: 'Classic · 5 tiers',
-    description: '151–200, 101–150, 21–100 as scrolling walls, Top 20 one-by-one spotlight, Top 3 on the 3D podium.',
+    description: '151–200, 101–150, 21–100 as manually advanced grids, Top 20 one-by-one spotlight, Top 3 on the 3D podium.',
     tiers: () => [
-      tier('Merit Achievers', 151, 200, 'scroll', '#38bdf8', 'award', 'Certificate of Merit'),
-      tier('Rising Innovators', 101, 150, 'scroll', '#60a5fa', 'star', 'Certificate of Excellence'),
-      tier('AI Explorers', 21, 100, 'scroll', '#818cf8', 'rocket', 'Certificate + Exciting Goodies'),
+      tier('Merit Achievers', 151, 200, 'grid', '#38bdf8', 'award', 'Certificate of Merit'),
+      tier('Rising Innovators', 101, 150, 'grid', '#60a5fa', 'star', 'Certificate of Excellence'),
+      tier('AI Explorers', 21, 100, 'grid', '#818cf8', 'rocket', 'Certificate + Exciting Goodies'),
       tier('Top 20 Stars', 4, 20, 'spotlight', '#c084fc', 'medal', 'Merit Scholarship + Trophy'),
       champions(),
     ],
@@ -67,9 +68,9 @@ export const TIER_PRESETS = [
   {
     key: 'focus-top-10',
     name: 'Focus on Top 10',
-    description: '11–200 as one scrolling wall, ranks 4–10 revealed one-by-one, Top 3 on the 3D podium.',
+    description: '11–200 as one manually advanced grid, ranks 4–10 revealed one-by-one, Top 3 on the 3D podium.',
     tiers: () => [
-      tier('AI Achievers', 11, 200, 'scroll', '#38bdf8', 'award', 'Certificate of Merit + Goodies'),
+      tier('AI Achievers', 11, 200, 'grid', '#38bdf8', 'award', 'Certificate of Merit + Goodies'),
       tier('Top 10 Stars', 4, 10, 'spotlight', '#c084fc', 'medal', 'Merit Scholarship + Trophy'),
       champions(),
     ],
