@@ -1,0 +1,125 @@
+/* Poster-style "AI Quest" lockup. Every dimension is in em so the lockup scales from the top bar to the hero. */
+
+.ql {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 0.14em;
+  font-family: Montserrat, Poppins, system-ui, sans-serif;
+  font-weight: 900;
+  font-style: italic;
+  line-height: 0.92;
+  letter-spacing: -0.035em;
+  white-space: nowrap;
+  user-select: none;
+  /* room for the extrusion + outline so nothing gets clipped by parents */
+  padding: 0.06em 0.16em 0.18em 0.06em;
+}
+.ql--sm { font-size: 34px; }
+.ql--md { font-size: clamp(40px, calc(var(--u, 1vw) * 4.6), 140px); }
+.ql--lg { font-size: calc(var(--u, 1vw) * 8); }
+.ql--xl { font-size: calc(var(--u, 1vw) * 11.6); }
+
+.ql-word {
+  display: inline-flex;
+  perspective: 6em;
+}
+.ql-word--ai { font-size: 1.1em; letter-spacing: -0.01em; }
+
+.ql-ch {
+  position: relative;
+  display: inline-block;
+  transform-origin: 50% 100%;
+}
+.ql-ch > span { display: block; }
+/* Positioned so it paints above the (absolutely positioned) extrusion layer that precedes it. */
+.ql-ch > .ql-face { position: relative; }
+.ql-ch > .ql-depth {
+  position: absolute;
+  inset: 0;
+}
+
+/* --- "AI": electric blue, circuit texture, dark-blue bevel + cyan aura ---------------------------- */
+.ql-word--ai .ql-depth {
+  color: #0a32a0;
+  -webkit-text-stroke: 0.085em #03103f;
+  text-shadow:
+    0.012em 0.016em 0 #0a32a0,
+    0.024em 0.032em 0 #0a2d92,
+    0.036em 0.048em 0 #092884,
+    0.048em 0.064em 0 #082376,
+    0.06em 0.08em 0 #071e68,
+    0.072em 0.096em 0 #06195a,
+    0.084em 0.112em 0 #05144c,
+    0.11em 0.15em 0.08em rgba(0, 4, 30, 0.6),
+    0 0 0.3em rgba(56, 225, 255, 0.55),
+    0 0 0.7em rgba(31, 94, 255, 0.45);
+}
+/* No text-stroke on faces: Montserrat glyphs are built from overlapping contours, and a stroke would
+   draw those internal seams (e.g. the "t" crossbar, the "Q" tail) across the letters. */
+.ql-word--ai .ql-face {
+  color: transparent;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cg fill='none' stroke='%23d6f8ff' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round' opacity='.6'%3E%3Cpath d='M0 14h18l8 8h16M52 14h8M30 0v10l6 6M0 44h10l8-8h14l6 6h22M44 60V48l6-6'/%3E%3C/g%3E%3Cg fill='%23f0fdff' opacity='.85'%3E%3Ccircle cx='42' cy='22' r='3'/%3E%3Ccircle cx='36' cy='16' r='2.4'/%3E%3Ccircle cx='38' cy='42' r='3'/%3E%3Ccircle cx='50' cy='42' r='2.4'/%3E%3C/g%3E%3C/svg%3E"),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0) 34%),
+    linear-gradient(180deg, #a6f0ff 0%, #38e1ff 26%, #00a8ff 48%, #1f5eff 72%, #0b3bb3 100%);
+  background-size: 0.46em 0.46em, 100% 100%, 100% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+/* --- "Quest": chunky gold with orange-brown extrusion and a white top highlight ---------------- */
+.ql-word--quest .ql-depth {
+  color: #c2610c;
+  -webkit-text-stroke: 0.075em #4a2203;
+  text-shadow:
+    0.012em 0.016em 0 #c2610c,
+    0.024em 0.032em 0 #b4560a,
+    0.036em 0.048em 0 #a64c09,
+    0.048em 0.064em 0 #974208,
+    0.06em 0.08em 0 #883907,
+    0.072em 0.096em 0 #793006,
+    0.084em 0.112em 0 #692805,
+    0.11em 0.15em 0.08em rgba(20, 6, 0, 0.55),
+    0 0 0.35em rgba(255, 196, 40, 0.4);
+}
+.ql-word--quest .ql-face {
+  color: transparent;
+  background-image:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0) 30%),
+    linear-gradient(180deg, #fff3b0 0%, #ffe066 24%, #ffd23f 44%, #fbbf24 62%, #f59e0b 84%, #e48a06 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+/* --- Glints (only when animated): star twinkles, transform/opacity only ------------------------ */
+.ql { position: relative; }
+.ql-glint {
+  position: absolute;
+  width: 0.34em;
+  height: 0.34em;
+  color: #ffffff;
+  filter: drop-shadow(0 0 0.08em rgba(255, 255, 255, 0.9));
+  opacity: 0;
+  pointer-events: none;
+  animation: ql-glint 4.8s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+.ql-glint--ai { left: 0.42em; top: 0.02em; animation-delay: 2s; }
+.ql-glint--quest { right: 0.42em; top: 0.06em; animation-delay: 4.4s; }
+@keyframes ql-glint {
+  0%, 70%, 100% { opacity: 0; transform: scale(0.2) rotate(0deg); }
+  78% { opacity: 1; transform: scale(1) rotate(45deg); }
+  88% { opacity: 0; transform: scale(0.3) rotate(90deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ql-glint { display: none; }
+}
+
+/* Glowing hairline divider. */
+.glow-divider {
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, var(--glow, #38e1ff) 50%, transparent);
+  box-shadow: 0 0 12px var(--glow, #38e1ff);
+  opacity: 0.8;
+}

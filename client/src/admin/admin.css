@@ -1,0 +1,99 @@
+/* Admin-only decorative styles (circuit backdrop, login motion). Transform/opacity animations only. */
+
+.aq-admin-bg {
+  background-image:
+    radial-gradient(900px 600px at 85% -10%, rgba(31, 94, 255, 0.22), transparent 60%),
+    radial-gradient(700px 500px at -10% 110%, rgba(0, 194, 255, 0.12), transparent 60%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cg fill='none' stroke='%2338e1ff' stroke-opacity='0.06' stroke-width='1'%3E%3Cpath d='M0 40h50l12 12h40M160 120h-46l-14-14H60M40 0v26l14 14M120 160v-30l-12-12'/%3E%3C/g%3E%3Cg fill='%2338e1ff' fill-opacity='0.1'%3E%3Ccircle cx='102' cy='52' r='2'/%3E%3Ccircle cx='60' cy='106' r='2'/%3E%3Ccircle cx='54' cy='40' r='2'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* Travelling light pulse along circuit traces (login). */
+.aq-trace-pulse {
+  stroke-dasharray: 60 940;
+  animation: aq-trace 6s linear infinite;
+}
+@keyframes aq-trace {
+  from {
+    stroke-dashoffset: 1000;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Slowly rising glowing particles (login). */
+.aq-particle {
+  position: absolute;
+  bottom: -12px;
+  border-radius: 9999px;
+  background: #38e1ff;
+  box-shadow: 0 0 10px 2px rgba(56, 225, 255, 0.6);
+  opacity: 0;
+  animation: aq-rise linear infinite;
+  will-change: transform, opacity;
+}
+@keyframes aq-rise {
+  0% {
+    transform: translate3d(0, 0, 0);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.85;
+  }
+  85% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: translate3d(24px, -105vh, 0);
+    opacity: 0;
+  }
+}
+
+/* Gap / overlap hatching for the tier coverage bar. */
+.aq-hatch-gap {
+  background-image: repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.14) 0 6px, transparent 6px 12px);
+}
+.aq-hatch-overlap {
+  background-image: repeating-linear-gradient(135deg, rgba(248, 113, 113, 0.95) 0 6px, rgba(127, 29, 29, 0.9) 6px 12px);
+}
+
+/* Slider styling for the auto-scroll speed control. */
+.aq-range {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, #38e1ff var(--fill, 50%), rgba(255, 255, 255, 0.12) var(--fill, 50%));
+  outline: none;
+}
+.aq-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 9999px;
+  background: #ffd23f;
+  border: 3px solid #041445;
+  box-shadow: 0 0 0 2px rgba(255, 210, 63, 0.5), 0 0 16px rgba(255, 210, 63, 0.6);
+  cursor: pointer;
+}
+.aq-range::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 9999px;
+  background: #ffd23f;
+  border: 3px solid #041445;
+  box-shadow: 0 0 0 2px rgba(255, 210, 63, 0.5), 0 0 16px rgba(255, 210, 63, 0.6);
+  cursor: pointer;
+}
+.aq-range:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 4px rgba(56, 225, 255, 0.6);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aq-particle,
+  .aq-trace-pulse {
+    animation: none;
+    opacity: 0;
+  }
+}

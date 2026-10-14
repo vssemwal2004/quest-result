@@ -1,0 +1,19 @@
+{
+  "name": "ai-quest-results",
+  "private": true,
+  "version": "1.0.0",
+  "description": "AI Quest results reveal platform — 3D big-screen show + JWT admin panel",
+  "scripts": {
+    "install:all": "npm install && cd server && npm install && cd ../client && npm install",
+    "dev": "concurrently -k -n server,client -c blue,yellow \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
+    "build": "npm run build --prefix client",
+    "start": "npm start --prefix server",
+    "seed:demo": "npm run seed:demo --prefix server",
+    "typecheck": "npm run typecheck --prefix client",
+    "test": "npm test --prefix server"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0",
+    "playwright-core": "^1.48.2"
+  }
+}

@@ -1,0 +1,272 @@
+/* Show-only styles. Sizes use --u: 1/100 of a 16:9 frame that fits the viewport, so the composition
+   is identical at 1280×720, 1920×1080 and 3840×2160 and never overflows on other aspect ratios. */
+
+.show-root {
+  --u: min(1vw, 1.7778vh);
+}
+
+/* ---------------------------------------------------------------- film finish */
+.show-vignette {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 78% 72% at 50% 46%, transparent 58%, rgba(1, 5, 22, 0.6) 100%),
+    linear-gradient(180deg, rgba(1, 5, 22, 0.35) 0%, transparent 14%, transparent 86%, rgba(1, 5, 22, 0.45) 100%);
+}
+
+/* Glass without backdrop-filter (a blur over the WebGL canvas forces an extra full read-back pass):
+   a semi-opaque navy gradient, an inner hairline and a top highlight read the same on a projector. */
+.show-glass {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: linear-gradient(180deg, rgba(20, 58, 160, 0.62) 0%, rgba(6, 22, 78, 0.78) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 0 0 1px rgba(56, 225, 255, 0.06),
+    0 10px 30px rgba(2, 10, 36, 0.45);
+}
+
+/* ---------------------------------------------------------------- branded loader */
+.show-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+}
+.show-loader__track {
+  position: relative;
+  width: calc(var(--u, 1vw) * 22);
+  height: 3px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+}
+.show-loader__bar {
+  position: absolute;
+  inset: 0;
+  width: 40%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, transparent, #38e1ff 40%, #ffd23f 70%, transparent);
+  animation: show-loader 1.3s cubic-bezier(0.45, 0, 0.25, 1) infinite;
+  will-change: transform;
+}
+@keyframes show-loader {
+  0% { transform: translateX(-110%); }
+  100% { transform: translateX(260%); }
+}
+
+/* ---------------------------------------------------------------- tagline ribbon */
+.tagline-ribbon {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.38em 1.6em 0.42em;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #ffffff 0%, #eef3ff 60%, #d9e4ff 100%);
+  color: #072065;
+  font-family: Montserrat, Poppins, sans-serif;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.035em;
+  line-height: 1.1;
+  box-shadow:
+    inset 0 -0.12em 0 #b4c6f7,
+    0 0.22em 0 rgba(4, 20, 69, 0.6),
+    0 0 1.4em rgba(56, 225, 255, 0.35);
+}
+
+/* ---------------------------------------------------------------- reveal CTA */
+.reveal-btn {
+  position: relative;
+  display: inline-flex;
+  border-radius: 999px;
+  cursor: pointer;
+  outline: none;
+  transform-style: preserve-3d;
+  -webkit-tap-highlight-color: transparent;
+}
+.reveal-btn:focus-visible .reveal-btn__face {
+  outline: 0.12em solid rgba(255, 255, 255, 0.9);
+  outline-offset: 0.25em;
+}
+.reveal-btn__halo {
+  position: absolute;
+  inset: -1.4em -2em;
+  border-radius: 999px;
+  background: radial-gradient(closest-side, rgba(255, 210, 63, 0.55), rgba(245, 158, 11, 0.18) 60%, transparent);
+  animation: reveal-halo 2.6s ease-in-out infinite;
+  pointer-events: none;
+  will-change: opacity;
+}
+@keyframes reveal-halo {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+.reveal-btn__ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  border: 0.09em solid rgba(255, 224, 102, 0.75);
+  box-shadow: 0 0 0.6em rgba(255, 210, 63, 0.45);
+  animation: reveal-ring 2.7s cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+.reveal-btn__ring:nth-child(3) { animation-delay: 0.9s; }
+.reveal-btn__ring:nth-child(4) { animation-delay: 1.8s; }
+@keyframes reveal-ring {
+  0% { transform: scale(1, 1); opacity: 0.9; }
+  100% { transform: scale(1.14, 1.75); opacity: 0; }
+}
+.reveal-btn__face {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65em;
+  padding: 0.62em 1.9em 0.62em 0.62em;
+  border-radius: 999px;
+  overflow: hidden;
+  font-family: Montserrat, Poppins, sans-serif;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #041445;
+  background: linear-gradient(180deg, #fff6c2 0%, #ffe066 22%, #ffd23f 48%, #fbbf24 72%, #f59e0b 100%);
+  box-shadow:
+    inset 0 0.12em 0 rgba(255, 255, 255, 0.9),
+    inset 0 -0.2em 0 rgba(176, 98, 6, 0.7),
+    inset 0 0 0 0.05em rgba(255, 255, 255, 0.35),
+    0 0.3em 0 #a35d07,
+    0 0.55em 1.2em rgba(0, 0, 0, 0.45),
+    0 0 2.2em rgba(255, 210, 63, 0.5);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.reveal-btn:active .reveal-btn__face {
+  transform: translateY(0.16em);
+  box-shadow:
+    inset 0 0.12em 0 rgba(255, 255, 255, 0.9),
+    inset 0 -0.2em 0 rgba(176, 98, 6, 0.7),
+    0 0.14em 0 #a35d07,
+    0 0.3em 0.8em rgba(0, 0, 0, 0.45),
+    0 0 2.6em rgba(255, 210, 63, 0.65);
+}
+.reveal-btn__icon {
+  display: grid;
+  place-items: center;
+  width: 2.1em;
+  height: 2.1em;
+  border-radius: 999px;
+  color: #ffe066;
+  background: radial-gradient(circle at 35% 28%, #3b7bff, #0b3bb3 45%, #041445 85%);
+  box-shadow: inset 0 0.06em 0 rgba(255, 255, 255, 0.4), inset 0 -0.08em 0.2em rgba(0, 0, 0, 0.5), 0 0 0.9em rgba(31, 94, 255, 0.55);
+}
+.reveal-btn__shine {
+  position: absolute;
+  top: -60%;
+  bottom: -60%;
+  left: 0;
+  width: 32%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
+  transform: translateX(-160%) skewX(-22deg);
+  animation: reveal-shine 3.4s ease-in-out 1s infinite;
+  pointer-events: none;
+  will-change: transform;
+}
+@keyframes reveal-shine {
+  0% { transform: translateX(-160%) skewX(-22deg); }
+  42%, 100% { transform: translateX(440%) skewX(-22deg); }
+}
+
+/* ---------------------------------------------------------------- waiting notice */
+.wait-dots span {
+  display: inline-block;
+  animation: wait-dot 1.4s ease-in-out infinite;
+}
+.wait-dots span:nth-child(2) { animation-delay: 0.2s; }
+.wait-dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes wait-dot {
+  0%, 80%, 100% { opacity: 0.2; transform: translateY(0); }
+  40% { opacity: 1; transform: translateY(-0.12em); }
+}
+
+/* ---------------------------------------------------------------- countdown */
+.countdown {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  pointer-events: none;
+}
+.countdown__dim {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(7, 32, 101, 0.25), rgba(2, 10, 36, 0.82) 75%);
+}
+.countdown__warp {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 130vmax;
+  height: 130vmax;
+  margin: -65vmax 0 0 -65vmax;
+  background: repeating-conic-gradient(from 0deg, transparent 0deg 3.4deg, rgba(127, 240, 255, 0.28) 3.4deg 4deg);
+  -webkit-mask-image: radial-gradient(circle, transparent 10%, #000 34%, transparent 68%);
+  mask-image: radial-gradient(circle, transparent 10%, #000 34%, transparent 68%);
+  animation: countdown-warp 3.4s cubic-bezier(0.5, 0, 0.9, 0.6) forwards;
+  will-change: transform, opacity;
+}
+@keyframes countdown-warp {
+  0% { transform: scale(0.5) rotate(0deg); opacity: 0; }
+  18% { opacity: 0.8; }
+  100% { transform: scale(1.9) rotate(18deg); opacity: 1; }
+}
+.countdown__num {
+  position: relative;
+  font-family: Orbitron, Montserrat, sans-serif;
+  font-weight: 900;
+  font-size: min(44vh, 32vw);
+  line-height: 1;
+  color: #ffffff;
+  text-shadow:
+    0 0 0.04em #ffffff,
+    0 0 0.14em rgba(56, 225, 255, 0.95),
+    0 0 0.4em rgba(31, 94, 255, 0.85);
+}
+.countdown__ring {
+  position: relative;
+  width: min(58vh, 42vw);
+  height: min(58vh, 42vw);
+  border-radius: 50%;
+  border: 0.55vh solid rgba(160, 245, 255, 0.95);
+  box-shadow: 0 0 3vh rgba(56, 225, 255, 0.85), inset 0 0 3vh rgba(56, 225, 255, 0.55);
+}
+.countdown__label {
+  position: absolute;
+  left: 0;
+  right: 0;
+  text-align: center;
+  top: calc(50% - min(33vh, 24vw));
+  font-family: Orbitron, Montserrat, sans-serif;
+  font-weight: 800;
+  font-size: calc(var(--u, 1vw) * 1.4);
+  letter-spacing: 0.5em;
+  text-transform: uppercase;
+  color: #ffe066;
+  text-shadow: 0 0 1em rgba(255, 210, 63, 0.7);
+}
+.countdown__flash {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, #ffffff 0%, rgba(210, 248, 255, 0.95) 28%, rgba(56, 225, 255, 0.55) 58%, rgba(2, 10, 36, 0.9) 100%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .countdown__warp,
+  .reveal-btn__ring,
+  .reveal-btn__shine {
+    display: none;
+  }
+}

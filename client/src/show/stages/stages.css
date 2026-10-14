@@ -1,0 +1,106 @@
+/* Stage-renderer animations (transform/opacity only, GPU friendly).
+   The global prefers-reduced-motion rule in index.css collapses these to their end state. */
+
+@keyframes qs-card-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, calc(var(--u) * 2.5), calc(var(--u) * -4)) rotateX(-28deg) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.qs-card-in {
+  animation: qs-card-in 0.75s cubic-bezier(0.2, 0.85, 0.25, 1) both;
+  animation-delay: var(--d, 0s);
+}
+
+@keyframes qs-twinkle {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(0.2) rotate(0deg);
+  }
+  45% {
+    opacity: 1;
+    transform: scale(1) rotate(45deg);
+  }
+  70% {
+    opacity: 0.25;
+    transform: scale(0.6) rotate(70deg);
+  }
+}
+.qs-twinkle {
+  animation: qs-twinkle var(--t, 3.2s) ease-in-out infinite;
+  animation-delay: var(--d, 0s);
+}
+
+@keyframes qs-sweep {
+  0% {
+    transform: translateX(-160%) skewX(-18deg);
+  }
+  55%,
+  100% {
+    transform: translateX(420%) skewX(-18deg);
+  }
+}
+.qs-sweep {
+  animation: qs-sweep var(--t, 6.5s) cubic-bezier(0.45, 0, 0.2, 1) infinite;
+  animation-delay: var(--d, 1s);
+}
+
+@keyframes qs-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.qs-spin {
+  animation: qs-spin var(--t, 8s) linear infinite;
+}
+
+@keyframes qs-burst {
+  0% {
+    opacity: 0.9;
+    transform: scale(0.15);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2.6);
+  }
+}
+.qs-burst {
+  animation: qs-burst 1.1s cubic-bezier(0.1, 0.7, 0.3, 1) both;
+}
+
+@keyframes qs-float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, calc(var(--u) * -0.6), 0);
+  }
+}
+.qs-float {
+  animation: qs-float var(--t, 5s) ease-in-out infinite;
+}
+
+@keyframes qs-pulse-glow {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+.qs-pulse-glow {
+  animation: qs-pulse-glow 2.6s ease-in-out infinite;
+}
+
+/* Wall of student cards: fade the top/bottom edges into the background. */
+.qs-fade-y {
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 9%, #000 88%, transparent 100%);
+  mask-image: linear-gradient(180deg, transparent 0%, #000 9%, #000 88%, transparent 100%);
+}
