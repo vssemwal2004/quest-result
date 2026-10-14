@@ -23,14 +23,14 @@ export interface StageProps {
 //   '@/show/podium/PodiumStage'  → export function PodiumStage(props: StageProps)  (style podium)
 //   '@/show/stages/FinaleStage'  → export function FinaleStage(props: StageProps)
 // Each renders full-viewport content on TOP of the shared animated background (transparent root).
-// The shell draws a slim brand TopBar (LAYOUT.topBar px) on tier/finale stages and the HUD progress rail
-// (LAYOUT.bottomRail px) at the bottom; stage content must live between them.
+// The shell draws a brand TopBar (LAYOUT.topBar px) on tier/finale stages and reserves
+// LAYOUT.bottomRail px for the progress HUD and the always-visible brand footer.
 //
 // Shared brand component (implemented by the shell, usable by stages):
 //   '@/show/brand/QuestLogo' → export function QuestLogo(props: { size?: 'sm' | 'md' | 'lg' | 'xl'; className?: string; animated?: boolean })
 //   renders the poster-style 3D "AI" (electric blue, circuit texture) + "Quest" (gold) lockup.
 
-export const LAYOUT = { topBar: 88, bottomRail: 72 } as const
+export const LAYOUT = { topBar: 88, bottomRail: 94, brandFooter: 34 } as const
 
 /** Ranks shown as "151 – 200" or "#1" for a single rank. */
 export function formatRange(from: number, to: number): string {

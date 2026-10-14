@@ -2,6 +2,7 @@ import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
 import clsx from 'clsx'
 import { AnimatePresence } from 'framer-motion'
 import { FilmOverlay } from './chrome/FilmOverlay'
+import { BrandFooter } from './chrome/BrandFooter'
 import { Hud } from './chrome/Hud'
 import { PreviewBadge } from './chrome/PreviewBadge'
 import { ShowLoader } from './chrome/ShowLoader'
@@ -147,6 +148,8 @@ export default function ShowPage() {
       )}
 
       <AnimatePresence>{ready && payload && showTopBar && <TopBar key="topbar" settings={payload.settings} />}</AnimatePresence>
+
+      {ready && payload && <BrandFooter settings={payload.settings} />}
 
       <AnimatePresence>
         {ready && payload && hudVisible && (

@@ -42,9 +42,10 @@ export function Hud({ stages, position, mode, connected, canControl, onPrev, onN
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 16 }}
       transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-      className="group fixed inset-x-0 bottom-0 z-30 flex items-center gap-[1.8vw] px-[2.5vw]"
+      className="group fixed inset-x-0 z-30 flex items-center gap-[1.8vw] px-[2.5vw]"
       style={{
-        height: LAYOUT.bottomRail,
+        bottom: LAYOUT.brandFooter,
+        height: LAYOUT.bottomRail - LAYOUT.brandFooter,
         background: 'linear-gradient(0deg, rgba(2,10,36,0.9) 0%, rgba(2,10,36,0.55) 55%, rgba(2,10,36,0) 100%)',
       }}
     >

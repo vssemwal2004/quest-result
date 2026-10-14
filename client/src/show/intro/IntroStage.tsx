@@ -130,7 +130,8 @@ export function IntroStage({ settings, totalWinners, canControl, revealing, onRe
       <HandwrittenLines lines={settings.handwrittenLines} className="absolute right-[calc(var(--u)*6)] top-[calc(var(--u)*2.6)]" />
 
       <Rise delay={0.1} className="relative z-[1] self-start">
-        <OrgLockup settings={settings} />
+        <span className="mb-[calc(var(--u)*0.5)] block font-tech text-[calc(var(--u)*0.9)] font-bold uppercase tracking-[0.32em] text-cyan-glow">Presented by</span>
+        <OrgLockup settings={settings} featured showLocation />
       </Rise>
 
       <main className="flex min-h-0 flex-1 items-center">

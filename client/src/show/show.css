@@ -5,6 +5,13 @@
   --u: min(1vw, 1.7778vh);
 }
 
+.show-brand-footer {
+  height: 34px;
+  border-top: 1px solid rgba(255, 210, 63, 0.42);
+  background: linear-gradient(90deg, rgba(2, 10, 36, 0.86), rgba(10, 42, 133, 0.96) 50%, rgba(2, 10, 36, 0.86));
+  box-shadow: 0 -4px 18px rgba(2, 10, 36, 0.45);
+}
+
 /* ---------------------------------------------------------------- film finish */
 .show-vignette {
   position: fixed;

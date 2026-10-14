@@ -1,8 +1,9 @@
 import { useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { MapPin, Phone } from 'lucide-react'
+import { Phone } from 'lucide-react'
 import type { StageProps } from '@/show/contracts'
 import { QuestLogo } from '@/show/brand/QuestLogo'
+import { OrgLockup } from '@/show/brand/OrgLockup'
 import type { Quality } from '@/types'
 import { GOLD_CONFETTI, QUEST_CONFETTI, useConfettiCanvas } from './confetti'
 import { GoldText3D } from './GoldText3D'
@@ -70,7 +71,6 @@ export function FinaleStage({ settings, totalWinners, quality, reducedMotion }: 
   const title = settings.finaleTitle.trim() || 'Congratulations!'
   const event = [settings.eventTitle, settings.eventEdition].filter((s) => s.trim()).join(' ')
   const ribbon = totalWinners > 0 ? `To all ${totalWinners} winners of ${event}` : `To all the winners of ${event}`
-  const place = [settings.organization, settings.location].filter((s) => s.trim()).join(', ')
 
   return (
     <StageFrame accentColor="#ffd23f">
@@ -110,13 +110,12 @@ export function FinaleStage({ settings, totalWinners, quality, reducedMotion }: 
           </motion.p>
         )}
 
-        <motion.div {...rise(1.1)} className="flex flex-col items-center" style={{ gap: u(0.9), marginTop: u(1.4) }}>
-          {place && (
-            <p className="flex items-center font-sans font-semibold text-white/90" style={{ fontSize: u(1.55), gap: u(0.6) }}>
-              <MapPin style={{ width: u(1.6), height: u(1.6) }} className="text-cyan-glow" />
-              {place}
-            </p>
-          )}
+        <motion.div {...rise(1.05)} className="flex flex-col items-center" style={{ marginTop: u(1.1) }}>
+          <span className="font-tech font-bold uppercase tracking-[0.32em] text-cyan-glow" style={{ fontSize: u(1) }}>Presented by</span>
+          <OrgLockup settings={settings} featured className="mt-[calc(var(--u)*0.6)] justify-center" />
+        </motion.div>
+
+        <motion.div {...rise(1.2)} className="flex flex-col items-center" style={{ gap: u(0.9) }}>
           {settings.contact.trim() && (
             <p
               className="flex items-center rounded-full bg-gold-gradient font-sans font-bold text-navy-900"
