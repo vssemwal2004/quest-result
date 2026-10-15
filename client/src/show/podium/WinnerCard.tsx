@@ -150,7 +150,7 @@ export function WinnerCard({
             {solo && hasPrize && (
               <div className="flex w-full flex-col items-center border-t border-white/20 text-center" style={{ marginTop: s(0.9), paddingTop: s(0.8), gap: s(0.25) }}>
                 <span className="font-tech font-bold uppercase text-white/60" style={{ fontSize: s(0.72), letterSpacing: '0.12em' }}>
-                  Tier prizes
+                  Rank #{student.rank} prize
                 </span>
                 {prizeAmount.trim() && (
                   <span className="font-display font-black text-gold-300" style={{ fontSize: s(1.35), lineHeight: 1.1 }}>

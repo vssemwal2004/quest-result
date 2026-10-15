@@ -76,11 +76,16 @@ const tierObject = z.object({
   rankTo: tierRank,
   prize: z.string().trim().max(200).default(''),
   prizeAmount: z.string().trim().max(60).default(''),
+  podiumPrizes: z.array(z.object({
+    rank: tierRank,
+    prize: z.string().trim().max(200),
+    prizeAmount: z.string().trim().max(60),
+  }).strict()).max(4).nullable().default(null),
   style: z.enum(DISPLAY_STYLES),
   color: hexColor.default('#38bdf8'),
   icon: z.enum(TIER_ICONS).default('award'),
   sortDirection: z.enum(['asc', 'desc']).default('asc'),
-  gridPageCounts: z.array(z.number().int().min(1).max(12)).min(1).max(500).nullable().default(null),
+  gridPageCounts: z.array(z.number().int().min(1).max(25)).min(1).max(500).nullable().default(null),
   enabled: z.boolean().default(true),
 })
 const TIER_READ_ONLY = ['id', 'order']

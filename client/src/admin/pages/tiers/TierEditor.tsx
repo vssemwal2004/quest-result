@@ -3,7 +3,7 @@ import { TriangleAlert, WandSparkles } from 'lucide-react'
 import clsx from 'clsx'
 import { toast } from 'sonner'
 import { api } from '@/lib/api'
-import type { Tier, TierInput } from '@/types'
+import type { PodiumPrize, Tier, TierInput } from '@/types'
 import { errorMessage, isApiError } from '../../lib/errors'
 import { overlappingTiers, rangeSubtitle } from '../../lib/ranks'
 import { ACCENT_SWATCHES, TIER_ICONS, TIER_ICON_OPTIONS, isHexColor, withAlpha } from '../../lib/tierMeta'
@@ -20,8 +20,8 @@ type Form = Omit<TierInput, 'rankFrom' | 'rankTo'> & { rankFrom: string; rankTo:
 
 function toForm(tier: Tier | null, others: Tier[]): Form {
   if (tier) {
-    const { name, subtitle, prize, prizeAmount, style, color, icon, sortDirection, gridPageCounts, enabled } = tier
-    return { name, subtitle, prize, prizeAmount, style: style === 'scroll' ? 'grid' : style, color, icon, sortDirection, gridPageCounts: style === 'grid' || style === 'scroll' ? gridPageCounts : null, enabled, rankFrom: String(tier.rankFrom), rankTo: String(tier.rankTo) }
+    const { name, subtitle, prize, prizeAmount, podiumPrizes, style, color, icon, sortDirection, gridPageCounts, enabled } = tier
+    return { name, subtitle, prize, prizeAmount, podiumPrizes: style === 'podium' ? podiumPrizes ?? null : null, style: style === 'scroll' ? 'grid' : style, color, icon, sortDirection, gridPageCounts: style === 'grid' || style === 'scroll' ? gridPageCounts : null, enabled, rankFrom: String(tier.rankFrom), rankTo: String(tier.rankTo) }
   }
   const usedColors = new Set(others.map((t) => t.color.toLowerCase()))
   return {
@@ -31,6 +31,7 @@ function toForm(tier: Tier | null, others: Tier[]): Form {
     rankTo: '',
     prize: '',
     prizeAmount: '',
+    podiumPrizes: null,
     style: 'grid',
     color: ACCENT_SWATCHES.find((c) => !usedColors.has(c)) ?? ACCENT_SWATCHES[0],
     icon: 'star',
@@ -88,6 +89,9 @@ export function TierEditor({ open, tier, allTiers, onClose, onSaved }: TierEdito
   const to = toInt(form.rankTo)
   const rangeValid = from !== null && to !== null && from >= 1 && to >= from
   const suggestion = rangeValid ? rangeSubtitle(from, to) : ''
+  const podiumRanks = rangeValid && form.style === 'podium' && to - from < 4
+    ? Array.from({ length: to - from + 1 }, (_, index) => from + index)
+    : []
   const subtitle = subtitleAuto ? suggestion : form.subtitle
   const conflicts = rangeValid && form.enabled ? overlappingTiers(allTiers, from, to, tier?.id) : []
 
@@ -108,9 +112,9 @@ export function TierEditor({ open, tier, allTiers, onClose, onSaved }: TierEdito
     color: isHexColor(form.color) ? null : 'Use a hex colour like #38bdf8.',
     pages: form.style === 'grid' && form.gridPageCounts !== null && rangeValid && (
       form.gridPageCounts.length < 1 || form.gridPageCounts.length > 500 ||
-      form.gridPageCounts.some((count) => !Number.isInteger(count) || count < 1 || count > 12) ||
+      form.gridPageCounts.some((count) => !Number.isInteger(count) || count < 1 || count > 25) ||
       form.gridPageCounts.reduce((sum, count) => sum + count, 0) !== to! - from! + 1
-    ) ? 'Manual pages must cover every rank, with 1–12 ranks on each page.' : null,
+    ) ? 'Manual pages must cover every rank, with 1–25 ranks on each page.' : null,
   }
   const hasErrors = Object.values(errors).some(Boolean)
   const show = (msg: string | null) => (submitted ? msg : null)
@@ -119,7 +123,10 @@ export function TierEditor({ open, tier, allTiers, onClose, onSaved }: TierEdito
     e.preventDefault()
     setSubmitted(true)
     if (hasErrors || busy || from === null || to === null) return
-    const input: TierInput = { ...form, name: form.name.trim(), subtitle: subtitle.trim(), rankFrom: from, rankTo: to }
+    const podiumPrizes = form.style === 'podium' && form.podiumPrizes !== null
+      ? podiumRanks.map((rank) => form.podiumPrizes?.find((entry) => entry.rank === rank) ?? { rank, prize: '', prizeAmount: '' })
+      : null
+    const input: TierInput = { ...form, name: form.name.trim(), subtitle: subtitle.trim(), rankFrom: from, rankTo: to, podiumPrizes }
     setBusy(true)
     setFormError(null)
     try {
@@ -138,6 +145,15 @@ export function TierEditor({ open, tier, allTiers, onClose, onSaved }: TierEdito
   const rangeError = serverRangeError ?? (submitted || conflicts.length ? errors.range : null)
   const isPodium = form.style === 'podium'
   const accent = isHexColor(form.color) ? form.color : '#38e1ff'
+  const setPodiumPrize = (rank: number, key: 'prize' | 'prizeAmount', value: string) => {
+    setForm((current) => ({
+      ...current,
+      podiumPrizes: podiumRanks.map((r): PodiumPrize => {
+        const entry = current.podiumPrizes?.find((item) => item.rank === r) ?? { rank: r, prize: '', prizeAmount: '' }
+        return r === rank ? { ...entry, [key]: value } : entry
+      }),
+    }))
+  }
 
   return (
     <Drawer
@@ -153,8 +169,8 @@ export function TierEditor({ open, tier, allTiers, onClose, onSaved }: TierEdito
             subtitle={subtitle}
             rankFrom={from}
             rankTo={to}
-            prize={form.prize}
-            prizeAmount={form.prizeAmount}
+            prize={form.podiumPrizes !== null && isPodium ? 'Individual prizes by rank' : form.prize}
+            prizeAmount={form.podiumPrizes !== null && isPodium ? '' : form.prizeAmount}
             color={accent}
             icon={form.icon}
             style={form.style}
@@ -244,17 +260,48 @@ export function TierEditor({ open, tier, allTiers, onClose, onSaved }: TierEdito
         </Section>
 
         <Section title="Prize">
-          <Field label="Prize" hint="e.g. Certificate of Merit + Goodies">
+          <Field label={isPodium ? 'Shared prize' : 'Prize'} hint={isPodium ? 'Used for all podium places when individual prizes are off.' : 'e.g. Certificate of Merit + Goodies'}>
             {(p) => <input {...p} className="input" value={form.prize} onChange={(e) => set('prize', e.target.value)} maxLength={160} />}
           </Field>
-          <Field label="Prize amount" hint="Optional free text, e.g. ₹1,00,000 or Up to ₹1 Lakh">
+          <Field label={isPodium ? 'Shared prize amount' : 'Prize amount'} hint="Optional free text, e.g. ₹1,00,000 or Up to ₹1 Lakh">
             {(p) => <input {...p} className="input" value={form.prizeAmount} onChange={(e) => set('prizeAmount', e.target.value)} maxLength={60} />}
           </Field>
+          {isPodium && (
+            <div className="space-y-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+              <p className="label">Podium prize mode</p>
+              <Segmented<'shared' | 'individual'>
+                ariaLabel="Podium prize mode"
+                value={form.podiumPrizes === null ? 'shared' : 'individual'}
+                onChange={(mode) => set('podiumPrizes', mode === 'shared' ? null : podiumRanks.map((rank) => ({ rank, prize: '', prizeAmount: '' })))}
+                options={[{ value: 'shared', label: 'Same for every place' }, { value: 'individual', label: 'Different for each place' }]}
+              />
+              {form.podiumPrizes !== null && (
+                <>
+                  <p className="text-xs text-white/60">Enter the prize for each rank. Leave both fields empty if that rank has no prize.</p>
+                  {podiumRanks.map((rank) => {
+                    const entry = form.podiumPrizes?.find((item) => item.rank === rank)
+                    return (
+                      <div key={rank} className="space-y-3 rounded-xl border border-white/10 bg-navy-950/40 p-3">
+                        <p className="font-tech text-sm font-bold text-gold-300">Rank #{rank}</p>
+                        <Field label={`Rank ${rank} prize amount`}>
+                          {(p) => <input {...p} className="input" value={entry?.prizeAmount ?? ''} onChange={(e) => setPodiumPrize(rank, 'prizeAmount', e.target.value)} maxLength={60} placeholder="e.g. ₹25,000" />}
+                        </Field>
+                        <Field label={`Rank ${rank} prize description`}>
+                          {(p) => <input {...p} className="input" value={entry?.prize ?? ''} onChange={(e) => setPodiumPrize(rank, 'prize', e.target.value)} maxLength={200} placeholder="e.g. Scholarship + Trophy" />}
+                        </Field>
+                      </div>
+                    )
+                  })}
+                  {podiumRanks.length === 0 && <p className="text-xs text-amber-200">Enter a podium rank range of up to four places to set their prizes.</p>}
+                </>
+              )}
+            </div>
+          )}
         </Section>
 
         <Section title="Display style">
           <StylePicker value={form.style} onChange={(style) => {
-            setForm((current) => ({ ...current, style, gridPageCounts: style === 'grid' ? current.gridPageCounts : null }))
+            setForm((current) => ({ ...current, style, gridPageCounts: style === 'grid' ? current.gridPageCounts : null, podiumPrizes: style === 'podium' ? current.podiumPrizes : null }))
             setServerRangeError(null)
           }} color={accent} />
           <div>
@@ -272,7 +319,7 @@ export function TierEditor({ open, tier, allTiers, onClose, onSaved }: TierEdito
             <p className="mt-1.5 text-xs leading-relaxed text-white/50">
               {isPodium
                 ? 'The podium runs suspense then reveal for 4th → 3rd → 2nd → 1st, followed by all four together.'
-                : 'The order names appear in the list and in one-by-one reveals. Descending builds suspense towards the best rank.'}
+                : 'The order ranks appear in the list. Grid pages reveal everyone together; Spotlight reveals one at a time.'}
             </p>
           </div>
           {form.style === 'grid' && (

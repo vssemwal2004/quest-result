@@ -41,7 +41,7 @@ describe('tiers', () => {
     assert.equal(a.order, 0)
     assert.equal(b.order, 1)
     assert.deepEqual(Object.keys(a), [
-      'id', 'name', 'subtitle', 'rankFrom', 'rankTo', 'prize', 'prizeAmount', 'style', 'color', 'icon', 'sortDirection', 'gridPageCounts', 'order', 'enabled',
+      'id', 'name', 'subtitle', 'rankFrom', 'rankTo', 'prize', 'prizeAmount', 'podiumPrizes', 'style', 'color', 'icon', 'sortDirection', 'gridPageCounts', 'order', 'enabled',
     ])
     assert.deepEqual((await repo.tiers.list()).map((t) => t.name), ['A', 'B'])
   })

@@ -4,6 +4,12 @@ export type DisplayStyle = 'scroll' | 'grid' | 'spotlight' | 'podium'
 export type TierIcon = 'trophy' | 'medal' | 'star' | 'award' | 'crown' | 'rocket' | 'sparkles'
 export type Quality = 'high' | 'medium' | 'low'
 
+export interface PodiumPrize {
+  rank: number
+  prize: string
+  prizeAmount: string
+}
+
 export interface Student {
   id: string
   rank: number
@@ -29,6 +35,8 @@ export interface Tier {
   rankTo: number
   prize: string
   prizeAmount: string
+  /** Null keeps the shared tier prize for podium winners. */
+  podiumPrizes: PodiumPrize[] | null
   style: DisplayStyle
   color: string
   icon: TierIcon

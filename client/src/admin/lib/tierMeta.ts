@@ -33,12 +33,12 @@ export interface StyleMeta {
 export const STYLE_META: Record<DisplayStyle, StyleMeta> = {
   scroll: {
     label: 'Grid',
-    description: 'Previously saved wall tiers show fixed grid cards, then a suspense and reveal press for each student.',
+    description: 'Previously saved wall tiers show fixed grid cards with cycling names, then reveal everyone on the page together.',
     icon: LayoutGrid,
   },
   grid: {
     label: 'Grid',
-    description: 'Show fixed anonymous cards first, then press Next for suspense and again for the real name. Pages hold up to 12 students.',
+    description: 'Names cycle on every card until Next reveals the whole page. Pages hold up to 25 students.',
     icon: LayoutGrid,
   },
   spotlight: {

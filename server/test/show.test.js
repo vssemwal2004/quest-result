@@ -80,7 +80,7 @@ describe('buildStages', () => {
   it('computes step counts per style', () => {
     assert.deepEqual(
       stages.map((s) => s.stepCount),
-      [1, 10, 4, 6, 8, 1],
+      [1, 3, 4, 3, 8, 1],
     )
     assert.deepEqual(
       stages.map((s) => s.studentCount),
@@ -110,26 +110,26 @@ describe('buildStages', () => {
     ])
   })
 
-  it('splits larger grids into balanced pages with a suspense and reveal step per student', () => {
-    const many = Array.from({ length: 25 }, (_, i) => ({ ...students[0], id: `g${i + 1}`, rank: i + 1 }))
-    const grid = buildStages(makeDb({ tiers: [tier('many', 1, 25, 'grid', 0)], students: many }))[1]
-    assert.equal(GRID_PAGE_SIZE, 12)
-    assert.equal(grid.pageSize, 12)
-    assert.equal(grid.stepCount, 52) // title + anonymous grid + two steps per student
-    assert.deepEqual(grid.pageEnds, [9, 17, 25])
-    assert.deepEqual(grid.studentRanks, Array.from({ length: 25 }, (_, i) => i + 1))
-    const stages = buildStages(makeDb({ tiers: [tier('many', 1, 25, 'grid', 0)], students: many }))
-    for (const [step, count] of [[0, 0], [1, 0], [2, 0], [3, 1], [20, 9], [21, 10], [35, 17], [51, 25]]) {
+  it('reveals balanced grid pages together, with at most 25 students per page', () => {
+    const many = Array.from({ length: 55 }, (_, i) => ({ ...students[0], id: `g${i + 1}`, rank: i + 1 }))
+    const grid = buildStages(makeDb({ tiers: [tier('many', 1, 55, 'grid', 0)], students: many }))[1]
+    assert.equal(GRID_PAGE_SIZE, 25)
+    assert.equal(grid.pageSize, 25)
+    assert.equal(grid.stepCount, 7) // title + suspense/reveal for each of three pages
+    assert.deepEqual(grid.pageEnds, [19, 37, 55])
+    assert.deepEqual(grid.studentRanks, Array.from({ length: 55 }, (_, i) => i + 1))
+    const stages = buildStages(makeDb({ tiers: [tier('many', 1, 55, 'grid', 0)], students: many }))
+    for (const [step, count] of [[0, 0], [1, 0], [2, 19], [3, 19], [4, 37], [5, 37], [6, 55]]) {
       const publicStage = filterForPublic(stages, { stageIndex: 1, step }, { spoilerProtection: true })[1]
       assert.equal(publicStage.students.length, count)
     }
     assert.deepEqual(nextPosition(stages, { stageIndex: 1, step: 2 }), { stageIndex: 1, step: 3 })
-    assert.deepEqual(nextPosition(stages, { stageIndex: 1, step: 51 }), { stageIndex: 2, step: 0 })
+    assert.deepEqual(nextPosition(stages, { stageIndex: 1, step: 6 }), { stageIndex: 2, step: 0 })
   })
 
   it('balances the final page instead of leaving two or eight students alone', () => {
-    assert.deepEqual(gridPageEnds(50), [10, 20, 30, 40, 50])
-    assert.deepEqual(gridPageEnds(80), [12, 24, 36, 47, 58, 69, 80])
+    assert.deepEqual(gridPageEnds(50), [25, 50])
+    assert.deepEqual(gridPageEnds(80), [20, 40, 60, 80])
     assert.deepEqual(gridPageEnds(2), [2])
     assert.deepEqual(gridPageEnds(0), [0])
   })
@@ -142,8 +142,8 @@ describe('buildStages', () => {
     assert.deepEqual(manualGridPageEnds(desc, [...many].reverse()), [6, 12, 20])
     const stages = buildStages(makeDb({ tiers: [asc], students: many }))
     assert.deepEqual(stages[1].pageEnds, [6, 12, 20])
-    assert.equal(stages[1].stepCount, 42)
-    assert.deepEqual(ranksOf(filterForPublic(stages, { stageIndex: 1, step: 25 }, { spoilerProtection: true })[1]), Array.from({ length: 12 }, (_, i) => i + 1))
+    assert.equal(stages[1].stepCount, 7)
+    assert.deepEqual(ranksOf(filterForPublic(stages, { stageIndex: 1, step: 4 }, { spoilerProtection: true })[1]), Array.from({ length: 12 }, (_, i) => i + 1))
   })
 
   it('omits manual pages with no uploaded students', () => {
@@ -151,14 +151,14 @@ describe('buildStages', () => {
     const manual = tier('sparse', 1, 10, 'grid', 0, { gridPageCounts: [4, 3, 3] })
     const stage = buildStages(makeDb({ tiers: [manual], students: sparse }))[1]
     assert.deepEqual(stage.pageEnds, [1, 2])
-    assert.equal(stage.stepCount, 6)
+    assert.equal(stage.stepCount, 5)
   })
 
-  it('renders previously saved scroll tiers as grids with two steps per card', () => {
+  it('renders previously saved scroll tiers as grids with two steps per page', () => {
     const many = Array.from({ length: 25 }, (_, i) => ({ ...students[0], id: `g${i + 1}`, rank: i + 1 }))
     const grid = buildStages(makeDb({ tiers: [tier('old', 1, 25, 'scroll', 0)], students: many }))[1]
     assert.equal(grid.tier.style, 'grid')
-    assert.equal(grid.stepCount, 52)
+    assert.equal(grid.stepCount, 3)
   })
 })
 
@@ -170,7 +170,7 @@ describe('navigation', () => {
     assert.deepEqual(nextPosition(stages, at(0, 0)), at(1, 0))
     assert.deepEqual(nextPosition(stages, at(1, 0)), at(1, 1))
     assert.deepEqual(nextPosition(stages, at(1, 1)), at(1, 2))
-    assert.deepEqual(nextPosition(stages, at(1, 9)), at(2, 0))
+    assert.deepEqual(nextPosition(stages, at(1, 2)), at(2, 0))
     assert.deepEqual(nextPosition(stages, at(2, 3)), at(3, 0))
     assert.deepEqual(nextPosition(stages, at(5, 0)), at(5, 0))
   })
@@ -179,7 +179,7 @@ describe('navigation', () => {
     assert.deepEqual(prevPosition(stages, at(2, 2)), at(2, 1))
     assert.deepEqual(prevPosition(stages, at(3, 0)), at(2, 3))
     assert.deepEqual(prevPosition(stages, at(5, 0)), at(4, 7))
-    assert.deepEqual(prevPosition(stages, at(2, 0)), at(1, 9))
+    assert.deepEqual(prevPosition(stages, at(2, 0)), at(1, 2))
     assert.deepEqual(prevPosition(stages, at(0, 0)), at(0, 0))
   })
 
@@ -203,7 +203,7 @@ describe('navigation', () => {
     assert.deepEqual(gotoPosition(stages, 2, 99), at(2, 3))
     assert.deepEqual(gotoPosition(stages, 99, 5), at(5, 0))
     assert.deepEqual(gotoPosition(stages, -3, -1), at(0, 0))
-    assert.deepEqual(clampPosition(stages, 1, 99), at(1, 9))
+    assert.deepEqual(clampPosition(stages, 1, 99), at(1, 2))
     assert.deepEqual(resetPosition(), at(0, 0))
   })
 
@@ -242,17 +242,13 @@ describe('spoiler protection', () => {
     }
   })
 
-  it('grid: fixed cards stay anonymous through suspense; the next step reveals one name', () => {
+  it('grid: every card cycles through suspense; the next step reveals the whole page', () => {
     assert.deepEqual(ranksOf(view(1, 0)[1]), [])
     assert.deepEqual(ranksOf(view(1, 1)[1]), [])
-    assert.deepEqual(ranksOf(view(1, 2)[1]), [])
-    assert.deepEqual(ranksOf(view(1, 3)[1]), [9])
-    assert.deepEqual(ranksOf(view(1, 4)[1]), [9])
-    assert.deepEqual(ranksOf(view(1, 9)[1]), [9, 10, 11, 12])
+    assert.deepEqual(ranksOf(view(1, 2)[1]), [9, 10, 11, 12])
     assert.deepEqual(ranksOf(view(3, 0)[3]), [])
     assert.deepEqual(ranksOf(view(3, 1)[3]), [])
-    assert.deepEqual(ranksOf(view(3, 2)[3]), [])
-    assert.deepEqual(ranksOf(view(3, 3)[3]), [8])
+    assert.deepEqual(ranksOf(view(3, 2)[3]), [8, 7])
   })
 
   it('spotlight reveals the first k students in reveal order', () => {

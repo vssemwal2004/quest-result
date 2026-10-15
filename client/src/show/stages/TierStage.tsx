@@ -10,15 +10,14 @@ import { u } from './units'
 
 /**
  * Tier stage for grid | spotlight (podium has its own renderer).
- * step 0 → title; grid step 1 → anonymous cards; each card then gets a suspense and reveal step.
+ * step 0 → title; each grid page then gets a cycling-names step and a whole-page reveal.
  * What to show is decided from `step` only; `stage.students` may be spoiler-filtered.
  */
 export function TierStage({ stage, step, quality, reducedMotion }: StageProps) {
   const tier = stage.tier
   if (!tier) return null
   const showTitle = step <= 0
-  const gridRevealed = Math.max(0, Math.floor((step - 1) / 2))
-  const gridSuspense = step > 1 && step % 2 === 0
+  const gridRevealed = step > 0 && step % 2 === 0
   const page = gridPageForStep(stage, step)
   const gridPage = gridPageBounds(stage, page)
 
@@ -57,13 +56,11 @@ export function TierStage({ stage, step, quality, reducedMotion }: StageProps) {
               <>
                 <TierHeader tier={tier} studentCount={stage.studentCount} />
                 <CardGrid
-                  students={stage.students.slice(gridPage.start, Math.min(gridRevealed, gridPage.end))}
+                  students={gridRevealed ? stage.students.slice(gridPage.start, gridPage.end) : []}
                   ranks={(stage.studentRanks ?? stage.students.map((student) => student.rank)).slice(gridPage.start, gridPage.end)}
                   page={page}
                   pageCount={stage.pageEnds?.length ?? 1}
-                  revealedCount={Math.min(gridRevealed, gridPage.end) - gridPage.start}
-                  activeIndex={step > 1 ? Math.floor(step / 2) - 1 - gridPage.start : -1}
-                  suspense={gridSuspense}
+                  revealed={gridRevealed}
                   reducedMotion={reducedMotion}
                 />
               </>

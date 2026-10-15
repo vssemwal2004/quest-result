@@ -33,7 +33,7 @@ import {
  * @typedef {{ id: string, rank: number, name: string, school: string, city: string | null, score: number | null,
  *             photoUrl: string | null, createdAt: string, updatedAt: string }} Student
  * @typedef {{ id: string, name: string, subtitle: string, rankFrom: number, rankTo: number, prize: string,
- *             prizeAmount: string, style: 'scroll'|'grid'|'spotlight'|'podium', color: string, icon: string,
+ *             prizeAmount: string, podiumPrizes: { rank: number, prize: string, prizeAmount: string }[] | null, style: 'scroll'|'grid'|'spotlight'|'podium', color: string, icon: string,
  *             sortDirection: 'asc'|'desc', gridPageCounts: number[] | null, order: number, enabled: boolean }} Tier
  * @typedef {Record<string, any> & { logoUrl: string | null, updatedAt: string }} Settings
  * @typedef {{ stageIndex: number, step: number, stageKey: string, updatedAt: string, version: number }} ShowStateRecord
@@ -50,7 +50,7 @@ import {
 
 export const MAX_SEARCH_LENGTH = 100
 const STUDENT_FIELDS = ['rank', 'name', 'school', 'city', 'score']
-const TIER_FIELDS = ['name', 'subtitle', 'rankFrom', 'rankTo', 'prize', 'prizeAmount', 'style', 'color', 'icon', 'sortDirection', 'gridPageCounts', 'enabled']
+const TIER_FIELDS = ['name', 'subtitle', 'rankFrom', 'rankTo', 'prize', 'prizeAmount', 'podiumPrizes', 'style', 'color', 'icon', 'sortDirection', 'gridPageCounts', 'enabled']
 const SETTINGS_FIELDS = SETTINGS_KEYS.filter((k) => k !== 'logoUrl' && k !== 'updatedAt')
 
 export const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')

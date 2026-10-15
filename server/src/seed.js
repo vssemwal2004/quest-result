@@ -36,6 +36,7 @@ function tier(name, rankFrom, rankTo, style, color, icon, prize, extra = {}) {
     rankTo,
     prize,
     prizeAmount: '',
+    podiumPrizes: null,
     style,
     color,
     icon,

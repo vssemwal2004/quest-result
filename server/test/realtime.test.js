@@ -63,7 +63,7 @@ describe('socket.io', () => {
     assert.ok(payload.version > initial.version)
     assert.equal(payload.state.step, 0)
 
-    // Jump to a populated grid tier, show anonymous cards, then reveal one.
+    // Jump to a populated grid tier, show cycling cards, then reveal the whole page.
     const gridIndex = initial.stages.findIndex((stage) => stage.tier?.style === 'grid' && stage.studentCount > 0)
     assert.ok(gridIndex > 0)
     const atGrid = waitFor(socket, 'show:update', (p) => p.state.stageIndex === gridIndex)
@@ -72,13 +72,10 @@ describe('socket.io', () => {
     const anonymous = waitFor(socket, 'show:update', (p) => p.state.stageIndex === gridIndex && p.state.step === 1)
     await srv.request('POST', '/api/admin/presentation/next', { token })
     assert.equal((await anonymous).stages[gridIndex].students.length, 0)
-    const suspense = waitFor(socket, 'show:update', (p) => p.state.stageIndex === gridIndex && p.state.step === 2)
-    await srv.request('POST', '/api/admin/presentation/next', { token })
-    assert.equal((await suspense).stages[gridIndex].students.length, 0)
-    const reveal = waitFor(socket, 'show:update', (p) => p.state.stageIndex === gridIndex && p.state.step === 3)
+    const reveal = waitFor(socket, 'show:update', (p) => p.state.stageIndex === gridIndex && p.state.step === 2)
     await srv.request('POST', '/api/admin/presentation/next', { token })
     const revealed = await reveal
-    assert.equal(revealed.stages[gridIndex].students.length, 1)
+    assert.equal(revealed.stages[gridIndex].students.length, initial.stages[gridIndex].pageEnds[0])
     assert.ok(revealed.stages.slice(gridIndex + 1).every((s) => s.students.length === 0))
   })
 

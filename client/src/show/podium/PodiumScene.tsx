@@ -87,8 +87,9 @@ export function PodiumScene({
         />
       )}
 
-      {slots.map((slot) => (
-        <Html key={slot.kind} position={[slot.x, slot.height + cardLift(slot.kind), 0]} zIndexRange={[20, 10]} pointerEvents="none">
+      {slots.map((slot) => {
+        const rankPrize = tier.podiumPrizes?.find((entry) => entry.rank === slot.rank)
+        return <Html key={slot.kind} position={[slot.x, slot.height + cardLift(slot.kind), 0]} zIndexRange={[20, 10]} pointerEvents="none">
           <AnimatePresence>
             {slot.suspense && (
               <div
@@ -111,13 +112,13 @@ export function PodiumScene({
                 instant={slot.order * 2 + 2 <= instantBelow || !solo}
                 reducedMotion={reducedMotion}
                 solo={solo}
-                prizeAmount={tier.prizeAmount}
-                prize={tier.prize}
+                prizeAmount={tier.podiumPrizes === null ? tier.prizeAmount : rankPrize?.prizeAmount ?? ''}
+                prize={tier.podiumPrizes === null ? tier.prize : rankPrize?.prize ?? ''}
               />
             )}
           </AnimatePresence>
         </Html>
-      ))}
+      })}
     </>
   )
 }

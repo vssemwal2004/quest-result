@@ -99,18 +99,57 @@ describe('tiers', () => {
     const show = (await api('GET', '/api/admin/presentation')).body
     const stage = show.stages.find((s) => s.tier?.id === created.body.tier.id)
     assert.deepEqual(stage.pageEnds, [10, 20])
-    assert.equal(stage.stepCount, 42)
+    assert.equal(stage.stepCount, 5)
 
     const updated = await api('PUT', `/api/admin/tiers/${created.body.tier.id}`, { json: { gridPageCounts: [5, 5, 5, 5] } })
     assert.equal(updated.status, 200)
     assert.deepEqual(updated.body.tier.gridPageCounts, [5, 5, 5, 5])
-    for (const counts of [[12, 9], [13, 7], []]) {
+    const fullPage = await api('POST', '/api/admin/tiers', {
+      json: newTier({ rankFrom: 330, rankTo: 354, gridPageCounts: [25] }),
+    })
+    assert.equal(fullPage.status, 201)
+    assert.deepEqual(fullPage.body.tier.gridPageCounts, [25])
+    for (const counts of [[25, 1], [26], []]) {
       const rejected = await api('PUT', `/api/admin/tiers/${created.body.tier.id}`, { json: { gridPageCounts: counts } })
       assert.equal(rejected.status, 400)
     }
     const restored = await api('PUT', `/api/admin/tiers/${created.body.tier.id}`, { json: { gridPageCounts: null } })
     assert.equal(restored.status, 200)
     assert.equal(restored.body.tier.gridPageCounts, null)
+  })
+
+  it('stores a different podium prize for each rank and withholds it until that rank is revealed', async () => {
+    const podiumPrizes = range(300, 303).map((rank) => ({ rank, prize: `Prize for ${rank}`, prizeAmount: `₹${rank}` }))
+    const created = await api('POST', '/api/admin/tiers', {
+      json: newTier({ rankFrom: 300, rankTo: 303, style: 'podium', prize: 'Shared prize', podiumPrizes }),
+    })
+    assert.equal(created.status, 201)
+    assert.deepEqual(created.body.tier.podiumPrizes, podiumPrizes)
+    await addStudents(api, null, range(300, 303).map((rank) => student(rank)))
+
+    const admin = (await api('GET', '/api/admin/presentation')).body
+    const stageIndex = admin.stages.findIndex((stage) => stage.tier?.id === created.body.tier.id)
+    assert.ok(stageIndex > 0)
+    const publicPrizes = async () => {
+      const show = (await srv.request('GET', '/api/public/show')).body
+      return show.stages[stageIndex].tier.podiumPrizes
+    }
+    assert.deepEqual(await publicPrizes(), [], 'future rank prizes stay hidden')
+
+    await api('POST', '/api/admin/presentation/goto', { json: { stageIndex, step: 1 } })
+    assert.deepEqual(await publicPrizes(), [], 'suspense does not reveal a prize')
+    await api('POST', '/api/admin/presentation/goto', { json: { stageIndex, step: 2 } })
+    assert.deepEqual(await publicPrizes(), [podiumPrizes[3]], 'fourth place gets its own prize')
+    await api('POST', '/api/admin/presentation/goto', { json: { stageIndex, step: 4 } })
+    assert.deepEqual(await publicPrizes(), podiumPrizes.slice(2), 'the next reveal adds third place')
+
+    for (const entries of [podiumPrizes.slice(1), [podiumPrizes[0], podiumPrizes[0], ...podiumPrizes.slice(2)]]) {
+      const rejected = await api('PUT', `/api/admin/tiers/${created.body.tier.id}`, { json: { podiumPrizes: entries } })
+      assert.equal(rejected.status, 400)
+    }
+    const shared = await api('PUT', `/api/admin/tiers/${created.body.tier.id}`, { json: { podiumPrizes: null } })
+    assert.equal(shared.status, 200)
+    assert.equal(shared.body.tier.podiumPrizes, null)
   })
 
   it('lists and applies presets', async () => {

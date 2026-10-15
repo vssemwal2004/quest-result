@@ -3,6 +3,11 @@ import { DISPLAY_STYLES, MAX_RANK, TIER_ICONS } from '../../validation.js'
 import { baseOptions, defineModel, integer } from './common.js'
 
 const tierRank = { type: Number, required: true, min: 1, max: MAX_RANK, validate: integer }
+const podiumPrizeSchema = new mongoose.Schema({
+  rank: tierRank,
+  prize: { type: String, default: '', trim: true, maxlength: 200 },
+  prizeAmount: { type: String, default: '', trim: true, maxlength: 60 },
+}, { _id: false, strict: 'throw' })
 
 const tierSchema = new mongoose.Schema(
   {
@@ -12,6 +17,7 @@ const tierSchema = new mongoose.Schema(
     rankTo: tierRank,
     prize: { type: String, default: '', trim: true, maxlength: 200 },
     prizeAmount: { type: String, default: '', trim: true, maxlength: 60 },
+    podiumPrizes: { type: [podiumPrizeSchema], default: null },
     style: { type: String, required: true, enum: DISPLAY_STYLES },
     color: { type: String, default: '#38bdf8', lowercase: true, match: /^#([0-9a-f]{3}|[0-9a-f]{6})$/i },
     icon: { type: String, default: 'award', enum: TIER_ICONS },

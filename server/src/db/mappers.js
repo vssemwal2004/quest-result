@@ -68,6 +68,7 @@ export function toTier(doc) {
     rankTo: d.rankTo,
     prize: d.prize ?? '',
     prizeAmount: d.prizeAmount ?? '',
+    podiumPrizes: d.podiumPrizes?.map((entry) => ({ rank: entry.rank, prize: entry.prize ?? '', prizeAmount: entry.prizeAmount ?? '' })) ?? null,
     style: d.style,
     color: d.color,
     icon: d.icon,

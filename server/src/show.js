@@ -5,7 +5,7 @@
  */
 
 export const LIST_STYLES = new Set(['scroll', 'grid'])
-export const GRID_PAGE_SIZE = 12
+export const GRID_PAGE_SIZE = 25
 
 /** Cumulative page ends, spread evenly so the final grid page is not nearly empty. */
 export function gridPageEnds(studentCount) {
@@ -37,7 +37,7 @@ export function toPublicStudent(s) {
 
 export function toPublicTier(t) {
   const { order: _order, enabled: _enabled, ...rest } = t
-  return { ...rest, style: rest.style === 'scroll' ? 'grid' : rest.style }
+  return { ...rest, podiumPrizes: rest.podiumPrizes ?? null, style: rest.style === 'scroll' ? 'grid' : rest.style }
 }
 
 export const inTier = (tier, rank) => rank >= tier.rankFrom && rank <= tier.rankTo
@@ -56,8 +56,8 @@ export function tierStudents(tier, students) {
   return students.filter((s) => inTier(tier, s.rank)).sort((a, b) => dir * (a.rank - b.rank))
 }
 
-export function stepCountFor(style, studentCount) {
-  if (LIST_STYLES.has(style)) return studentCount > 0 ? 2 + 2 * studentCount : 1
+export function stepCountFor(style, studentCount, pageCount = Math.ceil(studentCount / GRID_PAGE_SIZE)) {
+  if (LIST_STYLES.has(style)) return studentCount > 0 ? 1 + 2 * pageCount : 1
   // Each podium winner has a suspense step and a separate reveal step, then a group shot.
   if (style === 'podium') return 1 + 2 * studentCount + (studentCount > 1 ? 1 : 0)
   return 1 + studentCount
@@ -78,7 +78,7 @@ export function buildStages(db) {
       type: 'tier',
       key: `tier:${tier.id}`,
       title: tier.name,
-      stepCount: stepCountFor(tier.style, students.length),
+      stepCount: stepCountFor(tier.style, students.length, pageEnds?.length),
       tier: toPublicTier(tier),
       studentCount: students.length,
       students,
@@ -143,10 +143,21 @@ export function filterForPublic(stages, state, settings) {
   if (!settings.spoilerProtection) return stages
   return stages.map((stage) => {
     if (stage.index < state.stageIndex || stage.type !== 'tier') return stage
-    if (stage.index > state.stageIndex) return { ...stage, students: [] }
-    const visibleCount = LIST_STYLES.has(stage.tier.style) ? Math.max(0, Math.floor((state.step - 1) / 2)) : stage.tier.style === 'podium' ? Math.floor(state.step / 2) : state.step
+    if (stage.index > state.stageIndex) return {
+      ...stage,
+      students: [],
+      tier: stage.tier.podiumPrizes ? { ...stage.tier, podiumPrizes: [] } : stage.tier,
+    }
+    const revealedPages = Math.floor(state.step / 2)
+    const visibleCount = LIST_STYLES.has(stage.tier.style)
+      ? revealedPages > 0 ? stage.pageEnds?.[revealedPages - 1] ?? 0 : 0
+      : stage.tier.style === 'podium' ? Math.floor(state.step / 2) : state.step
     const visible = stage.students.slice(0, visibleCount)
-    return { ...stage, students: visible }
+    const visibleRanks = new Set(visible.map((student) => student.rank))
+    const tier = stage.tier.podiumPrizes
+      ? { ...stage.tier, podiumPrizes: stage.tier.podiumPrizes.filter((entry) => visibleRanks.has(entry.rank)) }
+      : stage.tier
+    return { ...stage, tier, students: visible }
   })
 }
 

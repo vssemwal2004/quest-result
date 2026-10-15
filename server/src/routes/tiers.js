@@ -19,13 +19,22 @@ export function assertValidTier(tier, otherTiers) {
       { path: 'rankTo', message: `Podium spans at most ${MAX_PODIUM_SPAN} ranks` },
     ])
   }
+  if (tier.podiumPrizes !== null && tier.podiumPrizes !== undefined) {
+    const entries = tier.podiumPrizes
+    const ranks = new Set(Array.isArray(entries) ? entries.map((entry) => entry.rank) : [])
+    if (tier.style !== 'podium' || !Array.isArray(entries) || entries.length !== tier.rankTo - tier.rankFrom + 1 || ranks.size !== entries.length || entries.some((entry) => entry.rank < tier.rankFrom || entry.rank > tier.rankTo)) {
+      throw new HttpError(400, 'VALIDATION', 'Individual podium prizes must have exactly one entry for each rank in this podium tier', [
+        { path: 'podiumPrizes', message: 'Include every podium rank exactly once' },
+      ])
+    }
+  }
   if (tier.gridPageCounts !== null && tier.gridPageCounts !== undefined) {
     const validStyle = tier.style === 'grid' || tier.style === 'scroll'
     const counts = tier.gridPageCounts
     const total = Array.isArray(counts) ? counts.reduce((sum, count) => sum + count, 0) : NaN
-    if (!validStyle || !Array.isArray(counts) || counts.length < 1 || counts.some((count) => !Number.isInteger(count) || count < 1 || count > 12) || total !== tier.rankTo - tier.rankFrom + 1) {
-      throw new HttpError(400, 'VALIDATION', 'Grid pages must cover every rank exactly once, with 1–12 ranks per page', [
-        { path: 'gridPageCounts', message: 'Page counts must total the tier rank range; each page holds 1–12 ranks' },
+    if (!validStyle || !Array.isArray(counts) || counts.length < 1 || counts.some((count) => !Number.isInteger(count) || count < 1 || count > 25) || total !== tier.rankTo - tier.rankFrom + 1) {
+      throw new HttpError(400, 'VALIDATION', 'Grid pages must cover every rank exactly once, with 1–25 ranks per page', [
+        { path: 'gridPageCounts', message: 'Page counts must total the tier rank range; each page holds 1–25 ranks' },
       ])
     }
   }

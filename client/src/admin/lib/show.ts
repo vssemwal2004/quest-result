@@ -68,17 +68,14 @@ export function describeStep(stage: ShowStage, step: number): StepDescription {
   if (tier?.style === 'scroll' || tier?.style === 'grid') {
     const pageNumber = gridPageForStep(stage, step)
     const { start, end } = gridPageBounds(stage, pageNumber)
-    const revealed = Math.max(0, Math.floor((step - 1) / 2))
-    const suspense = step > 1 && step % 2 === 0
-    const active = step > 1 ? stage.students[Math.floor(step / 2) - 1] ?? null : null
+    const revealed = step % 2 === 0
+    const totalRevealed = revealed ? end : start
     return {
-      headline: `Grid page ${pageNumber} of ${stage.pageEnds?.length ?? 1} · revealed ${revealed} of ${stage.studentCount}`,
-      detail: suspense && active
-        ? `Rank ${active.rank} is enlarged with decoy names cycling. Next reveals the real student.`
-        : active
-          ? `${studentLabel(active)} is revealed, then returns to its fixed place. ${Math.max(0, end - revealed)} cards remain on this page.`
-          : `Anonymous cards are fixed on page ${pageNumber} (students ${start + 1}–${end}). Next opens the first card's suspense view.`,
-      student: suspense ? null : active,
+      headline: `Grid page ${pageNumber} of ${stage.pageEnds?.length ?? 1} · revealed ${totalRevealed} of ${stage.studentCount}`,
+      detail: revealed
+        ? `All ${end - start} students on page ${pageNumber} are revealed. Next ${pageNumber === stage.pageEnds?.length ? 'moves to the next stage' : 'shows the next page with cycling names'}.`
+        : `All ${end - start} cards on page ${pageNumber} cycle decoy names. Next reveals the whole page.`,
+      student: null,
     }
   }
   if (tier?.style === 'podium' && stage.studentCount > 1 && step > stage.studentCount * 2) {

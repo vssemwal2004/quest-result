@@ -1,7 +1,7 @@
 import { Segmented } from '../../ui/Segmented'
 
 const MAX_PAGES = 500
-const MAX_PER_PAGE = 12
+const MAX_PER_PAGE = 25
 
 function balancedCounts(total: number, pages: number): number[] {
   const base = Math.floor(total / pages)
@@ -48,7 +48,7 @@ export function GridPageEditor({
         ]}
       />
       {!manual ? (
-        <p className="mt-3 text-xs text-white/60">{total ? 'Uploaded students are spread evenly across pages of up to 12.' : 'Enter a rank range to configure the pages.'}</p>
+        <p className="mt-3 text-xs text-white/60">{total ? 'Uploaded students are spread evenly across pages of up to 25.' : 'Enter a rank range to configure the pages.'}</p>
       ) : (
         <div className="mt-4 space-y-3">
           {!canConfigure && <p className="text-sm text-amber-200">Enter a valid rank range of at most {MAX_PAGES * MAX_PER_PAGE} ranks to set pages manually.</p>}

@@ -81,8 +81,8 @@ describe('show state', () => {
     const v0 = await repo.show.version()
     await Promise.all(Array.from({ length: 4 }, () => repo.show.transition(next)))
     const s = await repo.show.get()
-    // intro → grid title → anonymous cards → first card suspense → first reveal.
-    assert.deepEqual([s.stageIndex, s.step], [1, 3])
+    // intro → grid title → page suspense → whole-page reveal → podium title.
+    assert.deepEqual([s.stageIndex, s.step], [2, 0])
     assert.equal(s.version, v0 + 4)
     const noop = await repo.show.transition(() => null)
     assert.equal(noop.changed, false)

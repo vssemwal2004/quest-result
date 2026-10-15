@@ -107,8 +107,9 @@ export function TierCard({
               <span className="font-tech" style={{ color: tier.color }}>
                 {formatRange(tier.rankFrom, tier.rankTo)}
               </span>
-              {tier.prize && <> · {tier.prize}</>}
-              {tier.prizeAmount && <span className="text-gold-300"> · {tier.prizeAmount}</span>}
+              {tier.podiumPrizes !== null && tier.style === 'podium' ? ' · Individual prizes' : (
+                <>{tier.prize && <> · {tier.prize}</>}{tier.prizeAmount && <span className="text-gold-300"> · {tier.prizeAmount}</span>}</>
+              )}
             </p>
           </div>
         </div>

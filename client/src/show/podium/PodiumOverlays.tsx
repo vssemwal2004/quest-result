@@ -31,9 +31,13 @@ export function PodiumTitle({ tier, reducedMotion }: { tier: PublicTier; reduced
       <h1 className="font-display font-black uppercase" style={{ fontSize: u(4.6), lineHeight: 1.05, marginTop: u(0.3) }}>
         <GoldText3D>{tier.name}</GoldText3D>
       </h1>
-      <div style={{ marginTop: u(0.9) }}>
-        <PrizeBanner amount={tier.prizeAmount} prize={tier.prize} scale={0.75} />
-      </div>
+      {tier.podiumPrizes === null ? (
+        <div style={{ marginTop: u(0.9) }}>
+          <PrizeBanner amount={tier.prizeAmount} prize={tier.prize} scale={0.75} />
+        </div>
+      ) : (
+        <span className="font-tech font-bold uppercase tracking-widest text-gold-200" style={{ marginTop: u(0.9), fontSize: u(1.1) }}>Prizes revealed for each place</span>
+      )}
     </motion.div>
   )
 }
@@ -43,7 +47,7 @@ export function PodiumTitle({ tier, reducedMotion }: { tier: PublicTier; reduced
  * champion card and the bottom to the block numbers.
  */
 export function PodiumNameplate({ tier, compact = false }: { tier: PublicTier; compact?: boolean }) {
-  const prize = [tier.prizeAmount, tier.prize].map((s) => s.trim()).filter(Boolean).join(' · ')
+  const prize = tier.podiumPrizes === null ? [tier.prizeAmount, tier.prize].map((s) => s.trim()).filter(Boolean).join(' · ') : ''
   return (
     <motion.div
       className="absolute z-30 flex"
