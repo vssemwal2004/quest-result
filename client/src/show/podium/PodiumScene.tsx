@@ -10,6 +10,8 @@ import { BLOCK, cardLift, medalLabel, type PodiumSlot } from './slots'
 import { StageFloor } from './StageFloor'
 import { Trophy } from './Trophy'
 import { WINNER_CARD_WIDTH, WinnerCard } from './WinnerCard'
+import { DecoyName } from '@/show/stages/DecoyName'
+import { u } from '@/show/stages/units'
 
 /** Offline studio lighting for the metals: Lightformers baked once into an env map (no HDR download). */
 function StudioEnvironment() {
@@ -88,6 +90,17 @@ export function PodiumScene({
       {slots.map((slot) => (
         <Html key={slot.kind} position={[slot.x, slot.height + cardLift(slot.kind), 0]} zIndexRange={[20, 10]} pointerEvents="none">
           <AnimatePresence>
+            {slot.suspense && (
+              <div
+                key={`pending-${slot.rank}`}
+                className="rounded-2xl border border-cyan-200/70 bg-[#07163d]/95 text-center text-white shadow-[0_0_35px_rgba(56,225,255,.6)]"
+                style={{ width: u(23 * cardScale), padding: `${u(1.2 * cardScale)} ${u(1.5 * cardScale)}`, transform: 'translate(-50%, -100%)' }}
+              >
+                <div className="font-tech font-bold uppercase tracking-[.25em] text-cyan-200" style={{ fontSize: u(1.05 * cardScale) }}>Rank #{slot.rank}</div>
+                <div className="mt-2 whitespace-nowrap font-display font-black" style={{ fontSize: u(1.45 * cardScale) }}><DecoyName reducedMotion={reducedMotion} /></div>
+                <div className="mt-2 font-tech uppercase tracking-widest text-white/70" style={{ fontSize: u(.8 * cardScale) }}>Reveal pending</div>
+              </div>
+            )}
             {slot.student && (
               <WinnerCard
                 key={slot.student.id}
@@ -95,7 +108,8 @@ export function PodiumScene({
                 kind={slot.kind}
                 label={medalLabel(tier, slot)}
                 scale={cardScale}
-                instant={slot.order < instantBelow}
+                instant={slot.order * 2 + 2 <= instantBelow || !solo}
+                reducedMotion={reducedMotion}
                 solo={solo}
                 prizeAmount={tier.prizeAmount}
                 prize={tier.prize}

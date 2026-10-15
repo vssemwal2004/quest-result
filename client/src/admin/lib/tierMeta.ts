@@ -33,12 +33,12 @@ export interface StyleMeta {
 export const STYLE_META: Record<DisplayStyle, StyleMeta> = {
   scroll: {
     label: 'Grid',
-    description: 'Previously saved wall tiers now show as manually advanced grid pages.',
+    description: 'Previously saved wall tiers show fixed grid cards, then a suspense and reveal press for each student.',
     icon: LayoutGrid,
   },
   grid: {
     label: 'Grid',
-    description: 'Show up to 12 students per balanced page. Next and Previous change pages manually.',
+    description: 'Show fixed anonymous cards first, then press Next for suspense and again for the real name. Pages hold up to 12 students.',
     icon: LayoutGrid,
   },
   spotlight: {
@@ -48,7 +48,7 @@ export const STYLE_META: Record<DisplayStyle, StyleMeta> = {
   },
   podium: {
     label: '3D Podium',
-    description: 'Gold, silver and bronze blocks in 3D, revealed 3 → 2 → 1. Max 3 ranks.',
+    description: 'Four 3D podium blocks. Each rank gets a suspense step, then a reveal: 4 → 3 → 2 → 1.',
     icon: Trophy,
   },
 }

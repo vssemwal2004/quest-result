@@ -29,8 +29,8 @@ describe('tiers', () => {
         ['Merit Achievers', 151, 200, 'grid', '#38bdf8', 'award', 0],
         ['Rising Innovators', 101, 150, 'grid', '#60a5fa', 'star', 1],
         ['AI Explorers', 21, 100, 'grid', '#818cf8', 'rocket', 2],
-        ['Top 20 Stars', 4, 20, 'spotlight', '#c084fc', 'medal', 3],
-        ['The Champions', 1, 3, 'podium', '#facc15', 'crown', 4],
+        ['Top 20 Stars', 5, 20, 'spotlight', '#c084fc', 'medal', 3],
+        ['The Champions', 1, 4, 'podium', '#facc15', 'crown', 4],
       ],
     )
     assert.equal(list[3].sortDirection, 'desc')
@@ -65,12 +65,12 @@ describe('tiers', () => {
     assert.equal((await api('PUT', `/api/admin/tiers/${disabled.body.tier.id}`, { json: { enabled: true } })).status, 200)
   })
 
-  it('limits podium tiers to 3 ranks and requires rankFrom <= rankTo', async () => {
+  it('limits podium tiers to 4 ranks and requires rankFrom <= rankTo', async () => {
     const podium = await api('POST', '/api/admin/tiers', {
-      json: newTier({ style: 'podium', rankFrom: 300, rankTo: 303 }),
+      json: newTier({ style: 'podium', rankFrom: 300, rankTo: 304 }),
     })
     assert.equal(podium.status, 400)
-    assert.match(podium.body.error.message, /at most 3/)
+    assert.match(podium.body.error.message, /at most 4/)
 
     const inverted = await api('POST', '/api/admin/tiers', { json: newTier({ rankFrom: 320, rankTo: 300 }) })
     assert.equal(inverted.status, 400)
@@ -79,7 +79,7 @@ describe('tiers', () => {
     const widen = await api('PUT', `/api/admin/tiers/${champions.id}`, { json: { rankTo: 5 } })
     assert.equal(widen.status, 400)
     const unchanged = (await tiers()).find((t) => t.id === champions.id)
-    assert.equal(unchanged.rankTo, 3, 'failed update leaves the tier untouched')
+    assert.equal(unchanged.rankTo, 4, 'failed update leaves the tier untouched')
   })
 
   it('validates enums and colors', async () => {
@@ -99,7 +99,7 @@ describe('tiers', () => {
     const show = (await api('GET', '/api/admin/presentation')).body
     const stage = show.stages.find((s) => s.tier?.id === created.body.tier.id)
     assert.deepEqual(stage.pageEnds, [10, 20])
-    assert.equal(stage.stepCount, 3)
+    assert.equal(stage.stepCount, 42)
 
     const updated = await api('PUT', `/api/admin/tiers/${created.body.tier.id}`, { json: { gridPageCounts: [5, 5, 5, 5] } })
     assert.equal(updated.status, 200)
@@ -126,16 +126,16 @@ describe('tiers', () => {
       focus.body.tiers.map((t) => [t.rankFrom, t.rankTo, t.style]),
       [
         [11, 200, 'grid'],
-        [4, 10, 'spotlight'],
-        [1, 3, 'podium'],
+        [5, 10, 'spotlight'],
+        [1, 4, 'podium'],
       ],
     )
     const quick = await api('POST', '/api/admin/tiers/apply-preset', { json: { key: 'quick-3' } })
     assert.deepEqual(
       quick.body.tiers.map((t) => [t.rankFrom, t.rankTo, t.style]),
       [
-        [4, 200, 'grid'],
-        [1, 3, 'podium'],
+        [5, 200, 'grid'],
+        [1, 4, 'podium'],
       ],
     )
     assert.equal((await api('POST', '/api/admin/tiers/apply-preset', { json: { key: 'nope' } })).status, 404)
@@ -188,11 +188,11 @@ describe('presentation and overview', () => {
     const pos = (s) => [s.stageIndex, s.step]
 
     assert.deepEqual(pos(await step('next')), [1, 0])
-    assert.deepEqual(pos(await step('next')), [1, 1])
     assert.deepEqual(pos(await step('next')), [2, 0])
-    assert.deepEqual(pos(await step('prev')), [1, 1])
+    assert.deepEqual(pos(await step('next')), [2, 1])
+    assert.deepEqual(pos(await step('prev')), [2, 0])
     assert.deepEqual(pos(await step('goto', { stageIndex: 3 })), [3, 0])
-    assert.deepEqual(pos(await step('prev')), [2, 4])
+    assert.deepEqual(pos(await step('prev')), [2, 9])
     assert.deepEqual(pos(await step('goto', { stageIndex: 42, step: 9 })), [3, 0])
     assert.deepEqual(pos(await step('next')), [3, 0])
     assert.deepEqual(pos(await step('reset')), [0, 0])
@@ -211,13 +211,13 @@ describe('presentation and overview', () => {
     const adminShow = (await api('GET', '/api/admin/show')).body
     assert.deepEqual(
       adminShow.stages.find((s) => s.title === 'The Champions').students.map((s) => s.rank),
-      [3, 2, 1],
+      [4, 3, 2, 1],
     )
     assert.equal((await srv.request('GET', '/api/admin/show')).status, 401)
 
     await api('PUT', '/api/admin/settings', { json: { spoilerProtection: false } })
     const open = (await srv.request('GET', '/api/public/show')).body
-    assert.equal(open.stages.find((s) => s.title === 'Top 20 Stars').students.length, 17)
+    assert.equal(open.stages.find((s) => s.title === 'Top 20 Stars').students.length, 16)
     await api('PUT', '/api/admin/settings', { json: { spoilerProtection: true } })
   })
 
@@ -227,7 +227,7 @@ describe('presentation and overview', () => {
     assert.equal(o.studentCount, 4)
     assert.equal(o.tierCount, 5)
     const champions = o.tiers.find((t) => t.tier.name === 'The Champions')
-    assert.deepEqual([champions.studentCount, champions.expected], [2, 3])
+    assert.deepEqual([champions.studentCount, champions.expected], [2, 4])
     assert.deepEqual(
       o.unassignedStudents.map((s) => s.rank),
       [250],

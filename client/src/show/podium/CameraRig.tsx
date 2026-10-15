@@ -5,12 +5,13 @@ import { frameDelta } from './frame'
 import { cameraPosition, computeFraming } from './framing'
 
 /** How long the camera lingers on a freshly revealed block before easing back to the full view. */
-const FOCUS_MS = 2600
-const PAN_FACTOR = 0.33
-const DOLLY_IN = 0.9
+const FOCUS_MS = 4200
+const PAN_FACTOR = 0.78
+const DOLLY_IN = 0.78
 
 export interface CameraFocus {
   x: number
+  hold?: boolean
   /** Changes on every new reveal so repeated reveals of the same slot retrigger the move. */
   id: number
 }
@@ -34,7 +35,7 @@ export function CameraRig({ unitPx, focus, reducedMotion }: { unitPx: number; fo
     }
     if (reducedMotion) return
     focusX.current = focus.x
-    focusUntil.current = performance.now() + FOCUS_MS
+    focusUntil.current = focus.hold ? Infinity : performance.now() + FOCUS_MS
   }, [focus, reducedMotion])
 
   useFrame((_, delta) => {

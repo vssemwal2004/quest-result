@@ -63,11 +63,23 @@ describe('socket.io', () => {
     assert.ok(payload.version > initial.version)
     assert.equal(payload.state.step, 0)
 
-    // Reveal the first grid page: the payload now carries that page's students only.
-    const reveal = waitFor(socket, 'show:update', (p) => p.state.step === 1)
+    // Jump to a populated grid tier, show anonymous cards, then reveal one.
+    const gridIndex = initial.stages.findIndex((stage) => stage.tier?.style === 'grid' && stage.studentCount > 0)
+    assert.ok(gridIndex > 0)
+    const atGrid = waitFor(socket, 'show:update', (p) => p.state.stageIndex === gridIndex)
+    await srv.request('POST', '/api/admin/presentation/goto', { token, json: { stageIndex: gridIndex } })
+    await atGrid
+    const anonymous = waitFor(socket, 'show:update', (p) => p.state.stageIndex === gridIndex && p.state.step === 1)
+    await srv.request('POST', '/api/admin/presentation/next', { token })
+    assert.equal((await anonymous).stages[gridIndex].students.length, 0)
+    const suspense = waitFor(socket, 'show:update', (p) => p.state.stageIndex === gridIndex && p.state.step === 2)
+    await srv.request('POST', '/api/admin/presentation/next', { token })
+    assert.equal((await suspense).stages[gridIndex].students.length, 0)
+    const reveal = waitFor(socket, 'show:update', (p) => p.state.stageIndex === gridIndex && p.state.step === 3)
     await srv.request('POST', '/api/admin/presentation/next', { token })
     const revealed = await reveal
-    assert.ok(revealed.stages.slice(2).every((s) => s.students.length === 0))
+    assert.equal(revealed.stages[gridIndex].students.length, 1)
+    assert.ok(revealed.stages.slice(gridIndex + 1).every((s) => s.students.length === 0))
   })
 
   it('broadcasts settings changes and coalesces bursts', async () => {

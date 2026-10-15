@@ -1,8 +1,11 @@
+import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { MapPin } from 'lucide-react'
 import { StudentAvatar } from '@/components/StudentAvatar'
 import type { PublicStudent, PublicTier, Quality } from '@/types'
 import { GlowText } from './GlowText'
+import { RankBadge } from './RankBadge'
+import { ShuffleName } from './ShuffleName'
 import { CARD, CARD_GAP, StudentCard } from './StudentCard'
 import { TierHeader } from './TierHeader'
 import { accent, clamp, cssVars, u, useMeasure, useStageUnit } from './units'
@@ -16,6 +19,7 @@ export function SpotlightReveal({
   tier,
   students,
   studentCount,
+  studentRanks,
   step,
   quality,
   reducedMotion,
@@ -23,6 +27,7 @@ export function SpotlightReveal({
   tier: PublicTier
   students: PublicStudent[]
   studentCount: number
+  studentRanks: number[]
   step: number
   quality: Quality
   reducedMotion: boolean
@@ -45,16 +50,70 @@ export function SpotlightReveal({
                 className="absolute inset-0 grid place-items-center"
                 style={{ perspective: u(110) }}
                 initial={reducedMotion ? { opacity: 0 } : { opacity: 0, rotateY: -75, scale: 0.55, z: -400 }}
-                animate={{ opacity: 1, rotateY: 0, scale: 1, z: 0 }}
+                animate={reducedMotion ? { opacity: 1, rotateY: 0, scale: 1, z: 0 } : { opacity: 1, rotateY: 0, scale: [0.55, 1.16, 1.16, 1], z: 0 }}
                 exit={reducedMotion ? { opacity: 0 } : { opacity: 0, x: '35%', scale: 0.55, transition: { duration: 0.45, ease: [0.4, 0, 1, 1] } }}
-                transition={{ type: 'spring', stiffness: 80, damping: 15, mass: 1.1 }}
+                transition={reducedMotion ? { duration: 0 } : { opacity: { duration: .35 }, rotateY: { duration: .7 }, z: { duration: .7 }, scale: { duration: 3, times: [0, .3, .72, 1], ease: 'easeInOut' } }}
               >
-                <HeroCard student={hero} />
+                <HeroRevealCard student={hero} reducedMotion={reducedMotion} />
               </motion.div>
             )}
           </AnimatePresence>
         </div>
-        <WallOfFame students={wall} upcoming={Math.max(0, studentCount - k)} />
+        <div className="flex min-w-0 flex-1 flex-col" style={{ gap: u(1.2) }}>
+          <PendingDeck ranks={studentRanks.slice(k, k + 3)} reducedMotion={reducedMotion} />
+          <WallOfFame students={wall} upcoming={Math.max(0, studentCount - k)} reducedMotion={reducedMotion} />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/** Anonymous cards stay in motion until each corresponding Next press reveals its student. */
+function PendingDeck({ ranks, reducedMotion }: { ranks: number[]; reducedMotion: boolean }) {
+  if (ranks.length === 0) return null
+  return (
+    <div className="shrink-0" aria-label="Upcoming ranks shuffling">
+      <div className="font-tech font-bold uppercase tracking-[.3em] text-cyan-100/75" style={{ fontSize: u(1), marginBottom: u(.7) }}>Up next</div>
+      <div className="flex" style={{ gap: u(.7) }}>
+        {ranks.map((rank, index) => (
+          <div key={rank} className="min-w-0 flex-1" style={{ height: u(CARD.sm.height) }}>
+            <div
+              className={reducedMotion ? 'h-full' : 'qs-shuffle-card h-full'}
+              style={cssVars({ '--shuffle-delay': `${-index * .7}s`, '--shuffle-direction': index % 2 ? -1 : 1, '--shuffle-x': .8 })}
+            >
+              <div className="qs-card-back relative flex h-full items-center justify-center overflow-hidden rounded-xl border border-cyan-200/45 bg-[#0a2167]/95" style={{ gap: u(.35) }}>
+                <span className="font-tech font-black text-cyan-100" style={{ fontSize: u(1.4) }}>?</span>
+                <RankBadge rank={rank} size={CARD.sm.badge} />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function HeroRevealCard({ student, reducedMotion }: { student: PublicStudent; reducedMotion: boolean }) {
+  const [open, setOpen] = useState(reducedMotion)
+  useEffect(() => {
+    if (reducedMotion) {
+      setOpen(true)
+      return
+    }
+    setOpen(false)
+    const timer = window.setTimeout(() => setOpen(true), 750)
+    return () => window.clearTimeout(timer)
+  }, [student.id, reducedMotion])
+
+  if (open) return <div className={reducedMotion ? 'w-full' : 'qs-card-face-in w-full'} style={{ maxWidth: u(64) }}><HeroCard student={student} reducedMotion={reducedMotion} /></div>
+
+  return (
+    <div className="qs-card-back relative flex w-full items-center overflow-hidden rounded-3xl border border-cyan-200/60 bg-[#081b56]/95" style={{ maxWidth: u(64), minHeight: u(22), padding: u(3), gap: u(3) }}>
+      <div className="grid shrink-0 place-items-center rounded-full border-2 border-cyan-200/70 bg-cyan-200/10 font-tech font-black text-cyan-100" style={{ width: u(17), height: u(17), fontSize: u(7) }}>?</div>
+      <div className="min-w-0 flex-1">
+        <div className="font-tech font-bold uppercase tracking-[.3em] text-cyan-100" style={{ fontSize: u(1.3) }}>Rank #{student.rank}</div>
+        <div className="mt-4 font-display font-black tracking-widest text-white/70" style={{ fontSize: u(2.8) }}>···· ····</div>
+        <div className="mt-3 rounded-full bg-white/15" style={{ width: '65%', height: u(.7) }} />
       </div>
     </div>
   )
@@ -97,7 +156,7 @@ function HeroBackdrop({ step }: { step: number }) {
   )
 }
 
-function HeroCard({ student }: { student: PublicStudent }) {
+function HeroCard({ student, reducedMotion }: { student: PublicStudent; reducedMotion: boolean }) {
   const long = student.name.length > 22
   return (
     <div className="relative w-full" style={{ maxWidth: u(64) }}>
@@ -161,7 +220,7 @@ function HeroCard({ student }: { student: PublicStudent }) {
             className="line-clamp-2 break-words font-display font-extrabold text-white"
             style={{ fontSize: u(long ? 3.1 : 3.9), lineHeight: 1.08, marginTop: u(1), textShadow: `0 ${u(0.3)} ${u(1.2)} rgba(2,10,36,.8)` }}
           >
-            {student.name}
+            <ShuffleName name={student.name} duration={1700} delay={350} reducedMotion={reducedMotion} />
           </h2>
           <p className="line-clamp-2 font-sans font-medium text-white/85" style={{ fontSize: u(1.7), lineHeight: 1.25, marginTop: u(0.9) }}>
             {student.school}
@@ -182,7 +241,7 @@ function HeroCard({ student }: { student: PublicStudent }) {
 }
 
 /** Previously revealed students (newest first). Shows dim placeholders while it is still empty. */
-function WallOfFame({ students, upcoming }: { students: PublicStudent[]; upcoming: number }) {
+function WallOfFame({ students, upcoming, reducedMotion }: { students: PublicStudent[]; upcoming: number; reducedMotion: boolean }) {
   const unitPx = useStageUnit()
   const [ref, size] = useMeasure<HTMLDivElement>()
   const labelPx = 3 * unitPx
@@ -214,7 +273,7 @@ function WallOfFame({ students, upcoming }: { students: PublicStudent[]; upcomin
               transition={{ type: 'spring', stiffness: 140, damping: 18, delay: 0.35 }}
               style={{ width: cardWidth }}
             >
-              <StudentCard student={s} size="sm" />
+              <StudentCard student={s} size="sm" instant reducedMotion={reducedMotion} />
             </motion.div>
           ))}
           {overflow && (

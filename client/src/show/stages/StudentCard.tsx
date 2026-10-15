@@ -4,6 +4,7 @@ import { MapPin } from 'lucide-react'
 import { StudentAvatar } from '@/components/StudentAvatar'
 import type { PublicStudent } from '@/types'
 import { RankBadge } from './RankBadge'
+import { ShuffleName } from './ShuffleName'
 import { accent, u } from './units'
 
 export type CardSize = 'md' | 'sm'
@@ -27,14 +28,20 @@ export function StudentCard({
   size = 'md',
   className,
   style,
+  shuffleDelay = 0,
+  instant = false,
+  reducedMotion = false,
 }: {
   student: PublicStudent
   size?: CardSize
   className?: string
   style?: CSSProperties
+  shuffleDelay?: number
+  instant?: boolean
+  reducedMotion?: boolean
 }) {
   const m = CARD[size]
-  const top3 = student.rank <= 3
+  const top4 = student.rank <= 4
   return (
     <article className={clsx('relative', className)} style={{ height: u(m.height), contain: 'layout paint', ...style }}>
       {/* accent gradient border */}
@@ -42,7 +49,7 @@ export function StudentCard({
         className="absolute inset-0"
         style={{
           borderRadius: u(1.1),
-          background: top3
+          background: top4
             ? 'linear-gradient(135deg, #fff1a8, #ffd23f 30%, rgba(255,210,63,.15) 55%, #f59e0b)'
             : `linear-gradient(135deg, ${accent(0.95)} 0%, ${accent(0.18)} 38%, rgba(255,255,255,.08) 62%, ${accent(0.7)} 100%)`,
         }}
@@ -72,7 +79,7 @@ export function StudentCard({
             className="relative h-full w-full rounded-full"
             style={{
               padding: u(0.18),
-              background: top3 ? 'linear-gradient(160deg,#fff1a8,#f59e0b)' : `linear-gradient(160deg, #ffffff, ${accent(1)})`,
+              background: top4 ? 'linear-gradient(160deg,#fff1a8,#f59e0b)' : `linear-gradient(160deg, #ffffff, ${accent(1)})`,
             }}
           >
             <StudentAvatar name={student.name} photoUrl={student.photoUrl} rank={student.rank} className="h-full w-full" ring="ring-navy-900" />
@@ -86,9 +93,8 @@ export function StudentCard({
           <h3
             className={clsx('break-words font-sans font-semibold text-white', size === 'md' ? 'line-clamp-2' : 'line-clamp-1')}
             style={{ fontSize: u(m.name), lineHeight: 1.16, textShadow: '0 1px 2px rgba(2,10,36,.6)' }}
-            title={student.name}
           >
-            {student.name}
+            <ShuffleName name={student.name} duration={450} delay={shuffleDelay} instant={instant} reducedMotion={reducedMotion} />
           </h3>
           <p
             className={clsx('break-words font-sans text-white/75', size === 'md' ? 'line-clamp-2' : 'line-clamp-1')}

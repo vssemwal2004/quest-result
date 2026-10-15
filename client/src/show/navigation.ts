@@ -1,7 +1,6 @@
 // Client mirror of the server's navigation rules (docs/SPEC.md "Navigation"), used by preview mode
 // and to decide whether a freshly returned live state can be applied before its socket payload lands.
 import type { ShowStage } from '@/types'
-import { gridPageBounds } from './gridPages'
 
 export interface Position {
   stageIndex: number
@@ -46,8 +45,8 @@ export function prevPosition(stages: ShowStage[], from: Position): Position {
 export function hasDataFor(stages: ShowStage[], pos: Position): boolean {
   const stage = stages[pos.stageIndex]
   if (!stage?.tier) return true
-  const needed = stage.tier.style === 'grid' || stage.tier.style === 'scroll'
-    ? gridPageBounds(stage, pos.step).end
-    : Math.min(pos.step, stage.studentCount)
+  const needed = Math.min(stage.tier.style === 'grid' || stage.tier.style === 'scroll'
+    ? Math.max(0, Math.floor((pos.step - 1) / 2))
+    : stage.tier.style === 'podium' ? Math.floor(pos.step / 2) : pos.step, stage.studentCount)
   return stage.students.length >= needed
 }

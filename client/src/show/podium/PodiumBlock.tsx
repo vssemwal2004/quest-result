@@ -32,7 +32,7 @@ const SPOT_INTENSITY = 5.5
 export function PodiumBlock({ slot, reducedMotion }: { slot: PodiumSlot; reducedMotion: boolean }) {
   const metal = METAL[slot.kind]
   const h = slot.height
-  const lit = slot.student !== null
+  const lit = slot.revealed || slot.suspense
   const level = useRef(lit ? 1 : 0)
   const markerLevel = useRef(lit ? 0 : 1)
 
@@ -86,7 +86,7 @@ export function PodiumBlock({ slot, reducedMotion }: { slot: PodiumSlot; reduced
     if (light.current) light.current.intensity = SPOT_INTENSITY * t
     if (marker.current) {
       const m = markerLevel.current
-      marker.current.visible = m > 0.01
+      marker.current.visible = !lit && m > 0.01
       marker.current.scale.setScalar(0.4 + 0.6 * m)
       const bob = reducedMotion ? 0 : Math.sin(state.clock.elapsedTime * 1.6 + slot.x) * 0.07
       marker.current.position.y = h + 0.78 + bob
@@ -166,7 +166,7 @@ export function PodiumBlock({ slot, reducedMotion }: { slot: PodiumSlot; reduced
       <BeamCone color={metal.glow} top={LIGHT_HEIGHT} bottom={h} radiusTop={0.14} radiusBottom={1.45} level={level} />
 
       {/* "?" while unrevealed */}
-      <group ref={marker} position={[0, h + 0.78, 0]}>
+      <group ref={marker} visible={!lit} position={[0, h + 0.78, 0]}>
         <mesh renderOrder={3}>
           <planeGeometry args={[1.8, 1.8]} />
           <meshBasicMaterial map={glowTex} color="#38e1ff" transparent opacity={0.55} depthWrite={false} blending={AdditiveBlending} toneMapped={false} />

@@ -42,12 +42,12 @@ export function PodiumTitle({ tier, reducedMotion }: { tier: PublicTier; reduced
  * Compact tier plate in the top-left corner once reveals have started: the centre top belongs to the
  * champion card and the bottom to the block numbers.
  */
-export function PodiumNameplate({ tier }: { tier: PublicTier }) {
+export function PodiumNameplate({ tier, compact = false }: { tier: PublicTier; compact?: boolean }) {
   const prize = [tier.prizeAmount, tier.prize].map((s) => s.trim()).filter(Boolean).join(' · ')
   return (
     <motion.div
       className="absolute z-30 flex"
-      style={{ top: u(1.4), left: u(2.5), maxWidth: u(30) }}
+      style={{ top: u(1.4), left: u(2.5), maxWidth: u(compact ? 22 : 30) }}
       initial={{ opacity: 0, x: -30 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20, transition: { duration: 0.3 } }}
@@ -70,7 +70,7 @@ export function PodiumNameplate({ tier }: { tier: PublicTier }) {
           <span className="font-tech font-bold" style={{ fontSize: u(0.95), color: accent(1) }}>
             {rangeLabel(tier)}
           </span>
-          {prize && (
+          {prize && !compact && (
             <span
               className="inline-flex items-center rounded-full bg-gold-gradient text-left font-display font-extrabold text-navy-900"
               style={{ fontSize: u(0.9), padding: `${u(0.25)} ${u(0.9)}`, gap: u(0.4) }}

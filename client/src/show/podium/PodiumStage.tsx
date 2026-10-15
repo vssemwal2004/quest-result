@@ -48,15 +48,14 @@ function celebrateChampion(fire: (o: confetti.Options) => void, quality: Quality
 }
 
 /**
- * Podium tier: a real 3D podium in its own transparent canvas (the shared background shows through).
- * step 0 = empty podium + title; steps 1..n spotlight one winner (rank 3 → 2 → 1);
- * the final step brings all winners together.
+ * step 0 = title; odd steps focus an anonymous winner; even steps reveal that winner;
+ * the final step brings all four winners together.
  */
 export function PodiumStage({ stage, step, quality, reducedMotion }: StageProps) {
   const tier = stage.tier
   const unitPx = useStageUnit()
   const { canvasRef, fire } = useConfettiCanvas()
-  const slots = useMemo(() => (tier ? buildSlots(tier, stage.students, step) : []), [tier, stage.students, step])
+  const slots = useMemo(() => (tier ? buildSlots(tier, stage.students, step, stage.revealRanks) : []), [tier, stage.students, stage.revealRanks, step])
   const [focus, setFocus] = useState<CameraFocus | null>(null)
   const [live, setLive] = useState(true)
   // One-way: once frames drop we stay on the cheaper path (no reflector/sparkles, dpr 1) for this stage.
@@ -66,7 +65,7 @@ export function PodiumStage({ stage, step, quality, reducedMotion }: StageProps)
   const instantBelow = useRef(step)
   if (step < instantBelow.current) instantBelow.current = step
 
-  const prevStep = useRef(step)
+  const prevStep = useRef(-1)
   const timers = useRef<number[]>([])
   useEffect(() => () => timers.current.forEach((id) => window.clearTimeout(id)), [])
 
@@ -80,14 +79,16 @@ export function PodiumStage({ stage, step, quality, reducedMotion }: StageProps)
   useEffect(() => {
     const prev = prevStep.current
     prevStep.current = step
-    if (step <= prev) return
-    const newest = step <= stage.studentCount ? slots.find((s) => s.order === step - 1) : null
+    if (step === prev) return
+    timers.current.forEach((id) => window.clearTimeout(id))
+    timers.current = []
+    const newest = step <= stage.studentCount * 2 ? slots.find((s) => s.order === Math.floor((step - 1) / 2)) : null
     if (!newest) {
       setFocus(null)
       return
     }
-    setFocus({ x: newest.x, id: performance.now() })
-    if (newest.kind === 'gold' && !reducedMotion) timers.current.push(...celebrateChampion(fire, quality))
+    setFocus({ x: newest.x, hold: step % 2 === 1, id: performance.now() })
+    if (step > prev && step % 2 === 0 && newest.kind === 'gold' && !reducedMotion) timers.current.push(...celebrateChampion(fire, quality))
   }, [step, slots, fire, quality, reducedMotion, stage.studentCount])
 
   if (!tier) return null
@@ -112,7 +113,7 @@ export function PodiumStage({ stage, step, quality, reducedMotion }: StageProps)
               unitPx={unitPx}
               focus={focus}
               instantBelow={instantBelow.current}
-              solo={step > 0 && step <= stage.studentCount}
+              solo={step > 0 && step <= stage.studentCount * 2}
             />
           </Suspense>
         </Canvas>
@@ -120,7 +121,7 @@ export function PodiumStage({ stage, step, quality, reducedMotion }: StageProps)
       {/* Above the WebGL canvas, below the winner cards (drei <Html> z-index 10–20). */}
       <canvas ref={canvasRef} aria-hidden className="absolute inset-0 h-full w-full" />
       <AnimatePresence>
-        {step <= 0 ? <PodiumTitle key="title" tier={tier} reducedMotion={reducedMotion} /> : <PodiumNameplate key="plate" tier={tier} />}
+        {step <= 0 ? <PodiumTitle key="title" tier={tier} reducedMotion={reducedMotion} /> : <PodiumNameplate key="plate" tier={tier} compact={step > stage.studentCount * 2} />}
       </AnimatePresence>
     </StageFrame>
   )

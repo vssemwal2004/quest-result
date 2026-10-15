@@ -47,7 +47,7 @@ function tier(name, rankFrom, rankTo, style, color, icon, prize, extra = {}) {
 }
 
 const champions = () =>
-  tier('The Champions', 1, 3, 'podium', '#facc15', 'crown', 'Cash Prizes + Exciting Scholarships', {
+  tier('The Champions', 1, 4, 'podium', '#facc15', 'crown', 'Cash Prizes + Exciting Scholarships', {
     prizeAmount: 'Up to ₹1 Lakh',
   })
 
@@ -56,31 +56,31 @@ export const TIER_PRESETS = [
   {
     key: 'classic-5',
     name: 'Classic · 5 tiers',
-    description: '151–200, 101–150, 21–100 as manually advanced grids, Top 20 one-by-one spotlight, Top 3 on the 3D podium.',
+    description: '151–200, 101–150, 21–100 as manually advanced grids, ranks 5–20 in Spotlight, Top 4 on the 3D podium.',
     tiers: () => [
       tier('Merit Achievers', 151, 200, 'grid', '#38bdf8', 'award', 'Certificate of Merit'),
       tier('Rising Innovators', 101, 150, 'grid', '#60a5fa', 'star', 'Certificate of Excellence'),
       tier('AI Explorers', 21, 100, 'grid', '#818cf8', 'rocket', 'Certificate + Exciting Goodies'),
-      tier('Top 20 Stars', 4, 20, 'spotlight', '#c084fc', 'medal', 'Merit Scholarship + Trophy'),
+      tier('Top 20 Stars', 5, 20, 'spotlight', '#c084fc', 'medal', 'Merit Scholarship + Trophy'),
       champions(),
     ],
   },
   {
     key: 'focus-top-10',
     name: 'Focus on Top 10',
-    description: '11–200 as one manually advanced grid, ranks 4–10 revealed one-by-one, Top 3 on the 3D podium.',
+    description: '11–200 as one manually advanced grid, ranks 5–10 revealed one-by-one, Top 4 on the 3D podium.',
     tiers: () => [
       tier('AI Achievers', 11, 200, 'grid', '#38bdf8', 'award', 'Certificate of Merit + Goodies'),
-      tier('Top 10 Stars', 4, 10, 'spotlight', '#c084fc', 'medal', 'Merit Scholarship + Trophy'),
+      tier('Top 10 Stars', 5, 10, 'spotlight', '#c084fc', 'medal', 'Merit Scholarship + Trophy'),
       champions(),
     ],
   },
   {
     key: 'quick-3',
     name: 'Quick · 2 tiers',
-    description: 'Ranks 4–200 in one staggered grid, then the Top 3 on the 3D podium.',
+    description: 'Ranks 5–200 in one staggered grid, then the Top 4 on the 3D podium.',
     tiers: () => [
-      tier('AI Quest Winners', 4, 200, 'grid', '#60a5fa', 'star', 'Certificate of Excellence'),
+      tier('AI Quest Winners', 5, 200, 'grid', '#60a5fa', 'star', 'Certificate of Excellence'),
       champions(),
     ],
   },

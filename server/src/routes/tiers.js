@@ -3,7 +3,7 @@ import { asyncHandler, HttpError, notFound } from '../errors.js'
 import { findPreset, presetTiers, TIER_PRESETS } from '../seed.js'
 import { OBJECT_ID_RE, parse, presetSchema, reorderSchema, tierCreateSchema, tierUpdateSchema } from '../validation.js'
 
-export const MAX_PODIUM_SPAN = 3
+export const MAX_PODIUM_SPAN = 4
 
 const rangeLabel = (t) => (t.rankFrom === t.rankTo ? `${t.rankFrom}` : `${t.rankFrom}–${t.rankTo}`)
 

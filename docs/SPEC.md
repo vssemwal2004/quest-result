@@ -90,7 +90,7 @@ interface Settings {
 ```
 
 Validation (server, zod): enabled tiers must not overlap in rank ranges (409 `TIER_OVERLAP`);
-podium tiers must span ≤ 3 ranks (400). Manual grid counts must total the tier's rank span and each page
+podium tiers must span ≤ 4 ranks (400). Each podium rank has an anonymous suspense step followed by a reveal step; the final step shows all winners together. Manual grid counts must total the tier's rank span and each page
 must contain 1–12 ranks. Student ranks unique (409 `RANK_TAKEN`).
 
 ## Show model — server is the single source of truth
@@ -103,15 +103,15 @@ Step counts per stage:
 | Stage | stepCount | Meaning of `step` |
 |---|---|---|
 | intro | 1 | 0 = intro with Start button |
-| tier `grid` | 1 + number of nonempty pages | 0 = tier title card (name, ranks, prize); k ≥ 1 = page k of up to 12 students, balanced automatically or grouped by manual rank counts, advanced only by Next/Previous |
+| tier `grid` | 2 + 2n when n > 0; otherwise 1 | 0 = tier title card; 1 = anonymous first grid page; each student then has an enlarged suspense step with cycling decoy names and a separate real-name reveal step. The card returns to its fixed slot after reveal. Pages hold up to 12 students, balanced automatically or grouped by manual rank counts. |
 | tier `spotlight` | 1 + n | 0 = title card, k (1..n) = first k students revealed one-by-one |
-| tier `podium` | 1 + n + 1 when n > 1 (n ≤ 3) | 0 = empty podium + title, k (1..n) = one winner spotlighted (order rank 3 → 2 → 1), final step = all winners together |
+| tier `podium` | 1 + 2n + 1 when n > 1 (n ≤ 4) | 0 = empty podium + title; odd steps zoom to a rank with cycling fictional decoy names; even steps reveal the winner and remove that rank's question mark; final step = all winners together |
 | finale | 1 | 0 = congratulations / thank you |
 
 (n = number of students whose rank is inside the tier range.)
 
 **Student order inside a stage (`stage.students`)**: `grid`/`spotlight` → by rank per
-`tier.sortDirection` (asc = 1,2,3…; desc = …3,2,1). `podium` → always rank DESC (3, 2, 1 = reveal order).
+`tier.sortDirection` (asc = 1,2,3…; desc = …3,2,1). `podium` → always rank DESC (4, 3, 2, 1 = reveal order for the default tier).
 
 **Navigation** (server):
 - `next`: if `step < stepCount-1` → `step+1`; else if not last stage → `stageIndex+1, step 0`; else no-op.
@@ -121,12 +121,12 @@ Step counts per stage:
 
 **Spoiler protection** (when `settings.spoilerProtection` is true, the PUBLIC payload only contains
 revealed students): stages before the current one → all students; future stages → `students: []`
-(but `studentCount` is still given); current grid stage → students through the current page's cumulative end;
-`spotlight`/`podium`: the first `step` students of the reveal order (the podium's final group step receives all). When protection is off, every
+(but `studentCount` is still given); current grid stage → the first `max(0, floor((step - 1) / 2))` students; current spotlight stage → the first `step` students;
+`podium`: the first `floor(step / 2)` students (the podium's final group step receives all). Public rank order may be present for anonymous moving cards. When protection is off, every
 stage contains all of its students.
 **Clients must ALWAYS decide what to render from `stageIndex` / `step`, never from `students.length`.**
 (Render rule: past stage → fully revealed; current tier stage → `step === 0` title card, list visible when
-`step >= 1`; grid shows the current page using `stage.pageEnds`; spotlight shows `students.slice(0, step)`;
+`step >= 1`; grid finds the current page using `stage.pageEnds` and reveals cards through `floor((step - 1) / 2)`; spotlight shows `students.slice(0, step)` with remaining anonymous cards moving;
 podium shows only the current winner until its final group step.)
 
 ```ts
@@ -229,9 +229,9 @@ If any row is invalid and `dryRun=false`, nothing is written (400 `IMPORT_INVALI
    handwritten lines, glowing professional **Reveal Results** button (only for a logged-in admin on that
    screen; others see "The reveal begins shortly…" pulse). Click → 3-2-1 warp countdown → `next`.
 2. **Tier title card** (step 0): rank range, tier name, prize/amount, accent color, icon, 3D glass card.
-3. **Tier reveal**: `grid` = manually advanced pages of up to 12 student cards; `spotlight` = big hero card
+3. **Tier reveal**: `grid` = an anonymous first page, then pages of up to 12 fixed cards; Next opens a card with cycling decoy names, and another Next reveals the real student before the card returns; `spotlight` = big hero card
    for the newest reveal + revealed wall. Saved legacy `scroll` tiers display as grid pages.
-4. **Podium** — real three.js 3D podium (gold center/silver left/bronze right), spotlights, individual reveals 3 → 2 → 1
+4. **Podium** — real three.js 3D podium with four blocks, spotlights, suspense and individual reveals 4 → 3 → 2 → 1, then a group shot
    with camera moves; each winner's name, school, photo, optional score, and tier prize appear together. A final step
    displays all podium winners together; confetti lands with #1's individual reveal.
 5. **Finale** — congratulations to all `totalWinners`, thanks, contact line.

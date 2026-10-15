@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import type { StageProps } from '@/show/contracts'
-import { gridPageBounds } from '@/show/gridPages'
+import { gridPageBounds, gridPageForStep } from '@/show/gridPages'
 import { CardGrid } from './CardGrid'
 import { SpotlightReveal } from './SpotlightReveal'
 import { StageFrame } from './StageFrame'
@@ -10,14 +10,17 @@ import { u } from './units'
 
 /**
  * Tier stage for grid | spotlight (podium has its own renderer).
- * step 0 → title card; grid steps show one operator-controlled page.
+ * step 0 → title; grid step 1 → anonymous cards; each card then gets a suspense and reveal step.
  * What to show is decided from `step` only; `stage.students` may be spoiler-filtered.
  */
 export function TierStage({ stage, step, quality, reducedMotion }: StageProps) {
   const tier = stage.tier
   if (!tier) return null
   const showTitle = step <= 0
-  const gridPage = gridPageBounds(stage, step)
+  const gridRevealed = Math.max(0, Math.floor((step - 1) / 2))
+  const gridSuspense = step > 1 && step % 2 === 0
+  const page = gridPageForStep(stage, step)
+  const gridPage = gridPageBounds(stage, page)
 
   return (
     <StageFrame accentColor={tier.color}>
@@ -45,6 +48,7 @@ export function TierStage({ stage, step, quality, reducedMotion }: StageProps) {
                 tier={tier}
                 students={stage.students}
                 studentCount={stage.studentCount}
+                studentRanks={stage.studentRanks ?? []}
                 step={step}
                 quality={quality}
                 reducedMotion={reducedMotion}
@@ -53,9 +57,14 @@ export function TierStage({ stage, step, quality, reducedMotion }: StageProps) {
               <>
                 <TierHeader tier={tier} studentCount={stage.studentCount} />
                 <CardGrid
-                  students={stage.students.slice(gridPage.start, gridPage.end)}
-                  page={step}
-                  pageCount={stage.stepCount - 1}
+                  students={stage.students.slice(gridPage.start, Math.min(gridRevealed, gridPage.end))}
+                  ranks={(stage.studentRanks ?? stage.students.map((student) => student.rank)).slice(gridPage.start, gridPage.end)}
+                  page={page}
+                  pageCount={stage.pageEnds?.length ?? 1}
+                  revealedCount={Math.min(gridRevealed, gridPage.end) - gridPage.start}
+                  activeIndex={step > 1 ? Math.floor(step / 2) - 1 - gridPage.start : -1}
+                  suspense={gridSuspense}
+                  reducedMotion={reducedMotion}
                 />
               </>
             )}

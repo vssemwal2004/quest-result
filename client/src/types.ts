@@ -83,10 +83,14 @@ export interface ShowStage {
   stepCount: number
   tier: PublicTier | null
   studentCount: number
-  /** Number of students per manually advanced grid page. */
+  /** Maximum students per grid page. */
   pageSize?: number
   /** Cumulative end offset for each balanced grid page. */
   pageEnds?: number[]
+  /** Public rank order for anonymous, still-shuffling cards. Names remain spoiler protected. */
+  studentRanks?: number[]
+  /** Podium reveal order. Rank numbers are public even when names are still protected. */
+  revealRanks?: number[]
   students: PublicStudent[]
 }
 

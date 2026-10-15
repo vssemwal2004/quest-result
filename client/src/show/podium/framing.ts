@@ -13,7 +13,7 @@ const BOTTOM_MARGIN_U = 6
 /** World height from the floor to the top of the trophy on the gold block. */
 const PODIUM_COLUMN = 1.7 + TROPHY_HEIGHT
 /** Half of the horizontal world extent that must stay visible (outer block edges + card overhang). */
-const HALF_SPAN = BLOCK.spacing + BLOCK.width / 2 + 0.7
+const HALF_SPAN = BLOCK.spacing * 1.5 + BLOCK.width / 2 + 0.7
 
 export interface Framing {
   distance: number

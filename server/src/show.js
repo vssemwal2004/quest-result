@@ -57,9 +57,10 @@ export function tierStudents(tier, students) {
 }
 
 export function stepCountFor(style, studentCount) {
-  if (LIST_STYLES.has(style)) return 1 + gridPageEnds(studentCount).length
-  // The podium ends with a group shot after the individual reveals.
-  return 1 + studentCount + (style === 'podium' && studentCount > 1 ? 1 : 0)
+  if (LIST_STYLES.has(style)) return studentCount > 0 ? 2 + 2 * studentCount : 1
+  // Each podium winner has a suspense step and a separate reveal step, then a group shot.
+  if (style === 'podium') return 1 + 2 * studentCount + (studentCount > 1 ? 1 : 0)
+  return 1 + studentCount
 }
 
 /** `[intro] + enabled tiers by order + [finale]`, each with ALL its students (unfiltered). */
@@ -77,11 +78,13 @@ export function buildStages(db) {
       type: 'tier',
       key: `tier:${tier.id}`,
       title: tier.name,
-      stepCount: pageEnds ? 1 + pageEnds.length : stepCountFor(tier.style, students.length),
+      stepCount: stepCountFor(tier.style, students.length),
       tier: toPublicTier(tier),
       studentCount: students.length,
       students,
-      ...(pageEnds ? { pageSize: GRID_PAGE_SIZE, pageEnds } : {}),
+      ...(pageEnds ? { pageSize: GRID_PAGE_SIZE, pageEnds, studentRanks: students.map((s) => s.rank) } : {}),
+      ...(tier.style === 'spotlight' ? { studentRanks: students.map((s) => s.rank) } : {}),
+      ...(tier.style === 'podium' ? { revealRanks: students.map((s) => s.rank) } : {}),
     })
   }
   stages.push({
@@ -141,9 +144,8 @@ export function filterForPublic(stages, state, settings) {
   return stages.map((stage) => {
     if (stage.index < state.stageIndex || stage.type !== 'tier') return stage
     if (stage.index > state.stageIndex) return { ...stage, students: [] }
-    const visible = stage.tier.style === 'grid'
-      ? stage.students.slice(0, stage.pageEnds[state.step - 1] ?? 0)
-      : stage.students.slice(0, state.step)
+    const visibleCount = LIST_STYLES.has(stage.tier.style) ? Math.max(0, Math.floor((state.step - 1) / 2)) : stage.tier.style === 'podium' ? Math.floor(state.step / 2) : state.step
+    const visible = stage.students.slice(0, visibleCount)
     return { ...stage, students: visible }
   })
 }

@@ -2,7 +2,7 @@
 // Live control page can describe what the audience sees now and what the next press will do.
 import type { PublicStudent, ShowStage, ShowState } from '@/types'
 import { formatRange } from '@/show/contracts'
-import { gridPageBounds } from '@/show/gridPages'
+import { gridPageBounds, gridPageForStep } from '@/show/gridPages'
 
 export interface Position {
   stageIndex: number
@@ -66,31 +66,42 @@ export function describeStep(stage: ShowStage, step: number): StepDescription {
     }
   }
   if (tier?.style === 'scroll' || tier?.style === 'grid') {
-    const { start, end } = gridPageBounds(stage, step)
-    const page = stage.students.slice(start, end)
+    const pageNumber = gridPageForStep(stage, step)
+    const { start, end } = gridPageBounds(stage, pageNumber)
+    const revealed = Math.max(0, Math.floor((step - 1) / 2))
+    const suspense = step > 1 && step % 2 === 0
+    const active = step > 1 ? stage.students[Math.floor(step / 2) - 1] ?? null : null
     return {
-      headline: `Grid page ${step} of ${stage.stepCount - 1}`,
-      detail: page.length
-        ? `Showing ranks ${page[0].rank}–${page[page.length - 1].rank} (${page.length} students). Press Next or Previous to change pages.`
-        : `This page has no students. Press Next or Previous to change pages.`,
-      student: null,
+      headline: `Grid page ${pageNumber} of ${stage.pageEnds?.length ?? 1} · revealed ${revealed} of ${stage.studentCount}`,
+      detail: suspense && active
+        ? `Rank ${active.rank} is enlarged with decoy names cycling. Next reveals the real student.`
+        : active
+          ? `${studentLabel(active)} is revealed, then returns to its fixed place. ${Math.max(0, end - revealed)} cards remain on this page.`
+          : `Anonymous cards are fixed on page ${pageNumber} (students ${start + 1}–${end}). Next opens the first card's suspense view.`,
+      student: suspense ? null : active,
     }
   }
-  if (tier?.style === 'podium' && stage.studentCount > 1 && step > stage.studentCount) {
+  if (tier?.style === 'podium' && stage.studentCount > 1 && step > stage.studentCount * 2) {
     return {
       headline: 'Top winners together',
       detail: `All ${stage.studentCount} winners of ${range} are on the podium.`,
       student: null,
     }
   }
-  const student = stage.students[step - 1] ?? null
   if (tier?.style === 'podium') {
+    const student = stage.students[Math.floor((step - 1) / 2)] ?? null
+    if (step % 2 === 1) return {
+      headline: student ? `Rank ${student.rank} suspense` : 'Winner suspense',
+      detail: student ? `Camera zooms to rank ${student.rank}. The name is masked until the next press.` : 'Camera zooms to the next podium rank.',
+      student: null,
+    }
     return {
       headline: student ? `Rank ${student.rank} reveal` : 'Winner reveal',
-      detail: student ? `${studentLabel(student)} is spotlighted with their details and tier prizes.` : `Step ${step} of ${stage.stepCount - 1}.`,
+      detail: student ? `${studentLabel(student)} is revealed with their details and tier prizes.` : `Step ${step} of ${stage.stepCount - 1}.`,
       student,
     }
   }
+  const student = stage.students[step - 1] ?? null
   return {
     headline: `Revealed ${step} of ${stage.studentCount}`,
     detail: student ? `Latest reveal: ${studentLabel(student)}.` : `Step ${step} of ${stage.stepCount - 1}.`,

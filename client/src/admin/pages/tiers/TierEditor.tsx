@@ -100,8 +100,8 @@ export function TierEditor({ open, tier, allTiers, onClose, onSaved }: TierEdito
           ? 'Enter the last rank.'
           : to < from
             ? '“To” must be greater than or equal to “From”.'
-            : form.style === 'podium' && to - from + 1 > 3
-              ? `The 3D podium holds at most 3 ranks — this range has ${to - from + 1}.`
+            : form.style === 'podium' && to - from + 1 > 4
+              ? `The 3D podium holds at most 4 ranks — this range has ${to - from + 1}.`
               : conflicts.length
                 ? `Overlaps ${conflicts.map((t) => `${t.name} (${t.rankFrom}–${t.rankTo})`).join(', ')}. Change the range or disable one tier.`
                 : null,
@@ -271,7 +271,7 @@ export function TierEditor({ open, tier, allTiers, onClose, onSaved }: TierEdito
             />
             <p className="mt-1.5 text-xs leading-relaxed text-white/50">
               {isPodium
-                ? 'The podium always reveals 3rd → 2nd → 1st.'
+                ? 'The podium runs suspense then reveal for 4th → 3rd → 2nd → 1st, followed by all four together.'
                 : 'The order names appear in the list and in one-by-one reveals. Descending builds suspense towards the best rank.'}
             </p>
           </div>

@@ -81,8 +81,8 @@ describe('show state', () => {
     const v0 = await repo.show.version()
     await Promise.all(Array.from({ length: 4 }, () => repo.show.transition(next)))
     const s = await repo.show.get()
-    // intro(1) → grid tier (2 steps) → podium (title + 3 reveals + group): 4 presses = stage 2 step 1
-    assert.deepEqual([s.stageIndex, s.step], [2, 1])
+    // intro → grid title → anonymous cards → first card suspense → first reveal.
+    assert.deepEqual([s.stageIndex, s.step], [1, 3])
     assert.equal(s.version, v0 + 4)
     const noop = await repo.show.transition(() => null)
     assert.equal(noop.changed, false)
@@ -90,9 +90,12 @@ describe('show state', () => {
   })
 
   test('syncAfterChange clamps to the new stage list, follows the stage by key and bumps version', async () => {
+    const podiumKey = buildStages(await repo.loadSnapshot())[2].key
+    await repo.show.set({ stageIndex: 2, step: 1, stageKey: podiumKey })
     const before = await repo.show.get()
     assert.equal(before.stageKey.startsWith('tier:'), true)
     await repo.students.deleteAll() // podium now has 0 students → stepCount 1
+    await new Promise((resolve) => setTimeout(resolve, 2)) // Date timestamps have millisecond precision.
     const after = await repo.show.syncAfterChange()
     assert.equal(after.stageIndex, 2)
     assert.equal(after.step, 0)
