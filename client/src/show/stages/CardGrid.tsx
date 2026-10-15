@@ -3,26 +3,7 @@ import type { PublicStudent } from '@/types'
 import { DecoyName } from './DecoyName'
 import { RankBadge } from './RankBadge'
 import { CARD, CARD_GAP, StudentCard } from './StudentCard'
-import { accent, u, useMeasure, useStageUnit } from './units'
-import { rowsThatFit, stackHeight } from './wallLayout'
-
-/** Prefer complete rows and avoid leaving a few cards stranded on the last row. */
-function balancedColumns(count: number, maximum: number, rowsAvailable: number): number {
-  if (count <= 1) return 1
-  let best = 1
-  let bestScore = Infinity
-  for (let cols = 1; cols <= Math.min(count, maximum); cols++) {
-    const rows = Math.ceil(count / cols)
-    const empty = rows * cols - count
-    const overflow = Math.max(0, rows - rowsAvailable)
-    const score = overflow * 1000 + empty * 10 + rows
-    if (score < bestScore) {
-      best = cols
-      bestScore = score
-    }
-  }
-  return best
-}
+import { accent, cssVars, u, useMeasure, useStageUnit } from './units'
 
 function PendingCard({ rank, reducedMotion }: { rank: number; reducedMotion: boolean }) {
   return (
@@ -46,13 +27,23 @@ export function CardGrid({ students, ranks, page, pageCount, revealed, reducedMo
   const gapPx = CARD_GAP * unitPx
   // A 25-card page can fit five columns even on a 1280px projector.
   const minWidth = Math.max(190, CARD.sm.minWidth * unitPx)
-  const maximum = Math.min(6, Math.max(1, Math.floor((size.width + gapPx) / (minWidth + gapPx))))
-  const cols = balancedColumns(ranks.length, maximum, rowsThatFit(size.height, unitPx, 'sm'))
+  const maximum = Math.min(5, Math.max(1, Math.floor((size.width + gapPx) / (minWidth + gapPx))))
+  // Square-ish grids leave room to enlarge every card on pages with fewer students.
+  const cols = Math.min(maximum, Math.max(1, Math.ceil(Math.sqrt(ranks.length))))
   const rows = Math.ceil(ranks.length / cols)
-  const fits = stackHeight(rows, unitPx, 'sm') <= size.height
   const sidePadding = 1.2 * unitPx
   // Leave one pixel of slack so fractional widths never push a card onto an extra row.
-  const cardWidth = (size.width - 2 * sidePadding - (cols - 1) * gapPx) / cols - 1
+  const cellWidth = (size.width - 2 * sidePadding - (cols - 1) * gapPx) / cols - 1
+  const scale = ranks.length >= 25 || !size.height ? 1 : Math.max(.75, Math.min(
+    2.3,
+    cellWidth / (16 * unitPx),
+    (size.height - (rows - 1) * gapPx) / (rows * CARD.sm.height * unitPx),
+  ))
+  const cardUnitPx = unitPx * scale
+  const cardHeight = CARD.sm.height * cardUnitPx
+  // Keep sparse cards in the same wide format instead of stretching them edge to edge.
+  const cardWidth = ranks.length >= 25 ? cellWidth : Math.min(cellWidth, cardHeight * 3.5)
+  const fits = rows * cardHeight + (rows - 1) * gapPx <= size.height
 
   return (
     <div className="flex min-h-0 w-full flex-1 flex-col">
@@ -68,7 +59,7 @@ export function CardGrid({ students, ranks, page, pageCount, revealed, reducedMo
               exit={{ opacity: 0, transition: { duration: 0.25 } }}
             >
               {ranks.map((rank, i) => (
-                <div key={rank} className="relative" style={{ width: cardWidth, height: u(CARD.sm.height) }}>
+                <div key={rank} className="relative" style={{ width: cardWidth, height: cardHeight, ...(ranks.length < 25 ? cssVars({ '--u': `${cardUnitPx}px` }) : {}) }}>
                   {revealed && students[i] ? (
                     <motion.div
                       className="h-full"
