@@ -60,6 +60,7 @@ interface Tier {
   prize: string         // e.g. "Certificate of Merit + Goodies"
   prizeAmount: string   // e.g. "₹1,00,000" (free text, may be "")
   podiumPrizes: { rank: number; prize: string; prizeAmount: string }[] | null // null uses shared prize; otherwise one entry per podium rank
+  podiumMode: 'hybrid' | 'podium' | 'bot' // old records default to podium
   style: DisplayStyle
   color: string         // hex accent "#38bdf8"
   icon: TierIcon
@@ -106,13 +107,13 @@ Step counts per stage:
 | intro | 1 | 0 = intro with Start button |
 | tier `grid` | 1 + 2p when n > 0; otherwise 1 | 0 = tier title card; odd steps show every fixed card on the page cycling fictional decoy names; the next even step reveals every student on that page together. Pages hold up to 25 students, balanced automatically or grouped by manual rank counts. |
 | tier `spotlight` | 1 + n | 0 = title card, k (1..n) = first k students revealed one-by-one |
-| tier `podium` | 1 + 2n + 1 when n > 1 (n ≤ 4) | 0 = empty podium + title; odd steps zoom to a rank with cycling fictional decoy names; even steps reveal the winner and remove that rank's question mark; final step = all winners together |
+| tier `podium` | Podium/Bot: 1 + 2n + 1 when n > 1; Hybrid: 3 + 2n when n > 0 (n ≤ 4) | Podium/Bot retain their suspense, reveal and final group steps. Hybrid uses 0 = title, 1 = silent bot entrance and wave, 2 = medal positions, then each rank has a shuffle and reveal step in descending order. Revealed Hybrid winners remain visible. |
 | finale | 1 | 0 = congratulations / thank you |
 
 (n = number of students whose rank is inside the tier range; p = number of nonempty grid pages.)
 
 **Student order inside a stage (`stage.students`)**: `grid`/`spotlight` → by rank per
-`tier.sortDirection` (asc = 1,2,3…; desc = …3,2,1). `podium` → always rank DESC (4, 3, 2, 1 = reveal order for the default tier).
+`tier.sortDirection` (asc = 1,2,3…; desc = …3,2,1). `podium` → always rank DESC (3, 2, 1 = reveal order for the default tier).
 
 **Navigation** (server):
 - `next`: if `step < stepCount-1` → `step+1`; else if not last stage → `stageIndex+1, step 0`; else no-op.
@@ -123,16 +124,16 @@ Step counts per stage:
 **Spoiler protection** (when `settings.spoilerProtection` is true, the PUBLIC payload only contains
 revealed students): stages before the current one → all students; future stages → `students: []`
 (but `studentCount` is still given); current grid stage → all students through the last fully revealed page (`floor(step / 2)` pages); current spotlight stage → the first `step` students;
-`podium`: the first `floor(step / 2)` students (the podium's final group step receives all). Public rank order may be present for anonymous moving cards. When protection is off, every
+`podium`: the first `floor(step / 2)` students for Podium/Bot; Hybrid uses `max(0, floor((step - 2) / 2))`. Public rank order may be present for anonymous moving cards. When protection is off, every
 stage contains all of its students. Individual podium prize entries are withheld until their matching rank is revealed; `podiumPrizes: null` uses the shared tier prize.
 **Clients must ALWAYS decide what to render from `stageIndex` / `step`, never from `students.length`.**
 (Render rule: past stage → fully revealed; current tier stage → `step === 0` title card, list visible when
 `step >= 1`; grid finds the current page using `stage.pageEnds` and reveals that whole page on even steps; spotlight shows `students.slice(0, step)` with remaining anonymous cards moving;
-podium shows only the current winner until its final group step.)
+Podium/Bot show only the current winner until the final group step; Hybrid keeps revealed winners visible.)
 
 ```ts
 interface PublicStudent { id: string; rank: number; name: string; school: string; city: string | null; score: number | null; photoUrl: string | null }
-interface PublicTier { id, name, subtitle, rankFrom, rankTo, prize, prizeAmount, podiumPrizes, style, color, icon, sortDirection, gridPageCounts } // Tier minus order/enabled
+interface PublicTier { id, name, subtitle, rankFrom, rankTo, prize, prizeAmount, podiumPrizes, podiumMode, style, color, icon, sortDirection, gridPageCounts } // Tier minus order/enabled
 type StageType = 'intro' | 'tier' | 'finale'
 interface ShowStage {
   index: number; type: StageType; key: string /* 'intro' | 'tier:<id>' | 'finale' */
@@ -218,9 +219,9 @@ If any row is invalid and `dryRun=false`, nothing is written (400 `IMPORT_INVALI
   1. "Merit Achievers" 151–200 · grid · asc · `#38bdf8` · award · prize "Certificate of Merit"
   2. "Rising Innovators" 101–150 · grid · asc · `#60a5fa` · star · "Certificate of Excellence"
   3. "AI Explorers" 21–100 · grid · asc · `#818cf8` · rocket · "Certificate + Exciting Goodies"
-  4. "Top 20 Stars" 5–20 · spotlight · desc · `#c084fc` · medal · "Merit Scholarship + Trophy"
-  5. "The Champions" 1–4 · podium · `#facc15` · crown · shared prize "Cash Prizes + Exciting Scholarships", prizeAmount "Up to ₹1 Lakh"; Admin can set a separate prize for each rank.
-- Other presets: `focus-top-10` (11–200 grid, 5–10 spotlight, 1–4 podium) and `quick-3` (5–200 grid, 1–4 podium).
+  4. "Top 20 Stars" 4–20 · spotlight · desc · `#c084fc` · medal · "Merit Scholarship + Trophy"
+  5. "The Champions" 1–3 · podium style, hybrid presentation · `#facc15` · crown · shared prize "Cash Prizes + Exciting Scholarships", prizeAmount "Up to ₹1 Lakh"; Admin can set a separate prize for each rank.
+- Other presets: `focus-top-10` (11–200 grid, 4–10 spotlight, 1–3 Champions) and `quick-3` (4–200 grid, 1–3 Champions).
 - No students by default. `npm run seed:demo` (in `server/`) inserts 200 clearly-fake demo students for rehearsal.
 
 ## Show UX flow
@@ -232,13 +233,11 @@ If any row is invalid and `dryRun=false`, nothing is written (400 `IMPORT_INVALI
 2. **Tier title card** (step 0): rank range, tier name, prize/amount, accent color, icon, 3D glass card.
 3. **Tier reveal**: `grid` = pages of up to 25 fixed cards, all cycling decoy names until Next reveals the entire page; another Next shows the next page; `spotlight` = big hero card
    for the newest reveal + revealed wall. Saved legacy `scroll` tiers display as grid pages.
-4. **Podium** — real three.js 3D podium with four blocks, spotlights, suspense and individual reveals 4 → 3 → 2 → 1, then a group shot
-   with camera moves; each winner's name, school, photo, optional score, and tier prize appear together. A final step
-   displays all podium winners together; confetti lands with #1's individual reveal.
+4. **Champions** — each rank gets a suspense step with fictional names shuffling, then a reveal step, in 3 → 2 → 1 order. The tier's `podiumMode` selects `hybrid` (bot entrance and silent wave, medal positions, then one persistent bronze → silver → gold reveal scene), `podium` (all ranks on the 3D podium), or `bot` (all ranks with the bot). In Hybrid the bot visor shows only the active rank; large winner cards sit above the medals, with the champion card above the bot's hand. Bronze and silver confetti accompany their reveals; gold skyshots, fireworks and confetti accompany #1. The normal show background remains visible behind the bot.
 5. **Finale** — congratulations to all `totalWinners`, thanks, contact line.
 - HUD: bottom stage progress rail, live/connection dot, fullscreen (F), admin-only controls
   (← / → / Space / PageUp/PageDown — presentation clicker compatible). Cursor hides after 3 s idle.
-- `prefers-reduced-motion` and `settings.quality` reduce effects.
+- `prefers-reduced-motion` and `settings.quality` reduce effects. The bot's first-place skyshots play once on a capped 2D canvas.
 
 ### Preview mode (admin rehearsal, does NOT touch the live screen)
 

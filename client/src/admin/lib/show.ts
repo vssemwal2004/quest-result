@@ -78,23 +78,39 @@ export function describeStep(stage: ShowStage, step: number): StepDescription {
       student: null,
     }
   }
-  if (tier?.style === 'podium' && stage.studentCount > 1 && step > stage.studentCount * 2) {
+  if (tier?.style === 'podium' && tier.podiumMode === 'hybrid') {
+    if (step === 1) return { headline: 'Bot greeting', detail: 'The bot flies in and waves silently. Next brings in the medal rings.', student: null }
+    if (step === 2) return { headline: 'Medal rings', detail: 'Bronze, silver and gold positions appear. Next spotlights the first rank to reveal.', student: null }
+    const revealIndex = Math.floor((step - 3) / 2)
+    const student = stage.students[revealIndex] ?? null
+    const suspense = step % 2 === 1
+    return {
+      headline: student ? `Rank ${student.rank} ${suspense ? 'suspense' : 'reveal'}` : 'Winner reveal',
+      detail: suspense
+        ? `Rank ${student?.rank ?? '?'} gets a spotlight and cycling names. Next reveals the winner.`
+        : `${student ? studentLabel(student) : 'The winner'} is revealed with ${student?.rank === tier.rankFrom ? 'gold fireworks and skyshots' : 'confetti'}. Earlier winners stay visible.`,
+      student: suspense ? null : student,
+    }
+  }
+  const revealStep = step
+  if (tier?.style === 'podium' && stage.studentCount > 1 && revealStep > stage.studentCount * 2) {
     return {
       headline: 'Top winners together',
-      detail: `All ${stage.studentCount} winners of ${range} are on the podium.`,
+      detail: `All ${stage.studentCount} winners of ${range} are shown together ${tier.podiumMode === 'podium' ? 'on the podium' : 'by the bot'}.`,
       student: null,
     }
   }
   if (tier?.style === 'podium') {
-    const student = stage.students[Math.floor((step - 1) / 2)] ?? null
-    if (step % 2 === 1) return {
+    const student = stage.students[Math.floor((revealStep - 1) / 2)] ?? null
+    const presenter = tier.podiumMode === 'bot' ? 'bot' : 'podium'
+    if (revealStep % 2 === 1) return {
       headline: student ? `Rank ${student.rank} suspense` : 'Winner suspense',
-      detail: student ? `Camera zooms to rank ${student.rank}. The name is masked until the next press.` : 'Camera zooms to the next podium rank.',
+      detail: student ? `${presenter === 'bot' ? 'The bot presents' : 'The camera focuses on'} rank ${student.rank}. Names shuffle until the next press.` : 'The next rank enters suspense.',
       student: null,
     }
     return {
       headline: student ? `Rank ${student.rank} reveal` : 'Winner reveal',
-      detail: student ? `${studentLabel(student)} is revealed with their details and tier prizes.` : `Step ${step} of ${stage.stepCount - 1}.`,
+      detail: student ? `${studentLabel(student)} is revealed by the ${presenter} with their details and tier prizes.` : `Step ${step} of ${stage.stepCount - 1}.`,
       student,
     }
   }

@@ -47,8 +47,8 @@ export const STYLE_META: Record<DisplayStyle, StyleMeta> = {
     icon: Focus,
   },
   podium: {
-    label: '3D Podium',
-    description: 'Four 3D podium blocks. Each rank gets a suspense step, then a reveal: 4 → 3 → 2 → 1.',
+    label: 'Champions',
+    description: 'Each rank shuffles, then reveals. Choose Hybrid, 3D Podium, or Bot in the tier settings.',
     icon: Trophy,
   },
 }

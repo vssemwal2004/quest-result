@@ -20,8 +20,8 @@ type Form = Omit<TierInput, 'rankFrom' | 'rankTo'> & { rankFrom: string; rankTo:
 
 function toForm(tier: Tier | null, others: Tier[]): Form {
   if (tier) {
-    const { name, subtitle, prize, prizeAmount, podiumPrizes, style, color, icon, sortDirection, gridPageCounts, enabled } = tier
-    return { name, subtitle, prize, prizeAmount, podiumPrizes: style === 'podium' ? podiumPrizes ?? null : null, style: style === 'scroll' ? 'grid' : style, color, icon, sortDirection, gridPageCounts: style === 'grid' || style === 'scroll' ? gridPageCounts : null, enabled, rankFrom: String(tier.rankFrom), rankTo: String(tier.rankTo) }
+    const { name, subtitle, prize, prizeAmount, podiumPrizes, podiumMode, style, color, icon, sortDirection, gridPageCounts, enabled } = tier
+    return { name, subtitle, prize, prizeAmount, podiumPrizes: style === 'podium' ? podiumPrizes ?? null : null, podiumMode: podiumMode ?? 'podium', style: style === 'scroll' ? 'grid' : style, color, icon, sortDirection, gridPageCounts: style === 'grid' || style === 'scroll' ? gridPageCounts : null, enabled, rankFrom: String(tier.rankFrom), rankTo: String(tier.rankTo) }
   }
   const usedColors = new Set(others.map((t) => t.color.toLowerCase()))
   return {
@@ -32,6 +32,7 @@ function toForm(tier: Tier | null, others: Tier[]): Form {
     prize: '',
     prizeAmount: '',
     podiumPrizes: null,
+    podiumMode: 'podium',
     style: 'grid',
     color: ACCENT_SWATCHES.find((c) => !usedColors.has(c)) ?? ACCENT_SWATCHES[0],
     icon: 'star',
@@ -304,6 +305,28 @@ export function TierEditor({ open, tier, allTiers, onClose, onSaved }: TierEdito
             setForm((current) => ({ ...current, style, gridPageCounts: style === 'grid' ? current.gridPageCounts : null, podiumPrizes: style === 'podium' ? current.podiumPrizes : null }))
             setServerRangeError(null)
           }} color={accent} />
+          {isPodium && (
+            <div>
+              <p className="label">Champions presentation</p>
+              <Segmented
+                ariaLabel="Champions presentation"
+                value={form.podiumMode}
+                onChange={(value) => set('podiumMode', value)}
+                options={[
+                  { value: 'hybrid', label: 'Hybrid' },
+                  { value: 'podium', label: 'Podium' },
+                  { value: 'bot', label: 'Bot' },
+                ]}
+              />
+              <p className="mt-1.5 text-xs leading-relaxed text-white/50">
+                {form.podiumMode === 'hybrid'
+                  ? 'The bot arrives and waves silently, then bronze, silver and gold medal positions appear. Each next pair of clicks shuffles and reveals 3rd, 2nd, then 1st place.'
+                  : form.podiumMode === 'bot'
+                    ? 'Every rank shuffles and reveals with the bot.'
+                    : 'Every rank shuffles and reveals on the 3D podium.'}
+              </p>
+            </div>
+          )}
           <div>
             <p className="label">Reveal order inside tier</p>
             <Segmented
@@ -318,7 +341,7 @@ export function TierEditor({ open, tier, allTiers, onClose, onSaved }: TierEdito
             />
             <p className="mt-1.5 text-xs leading-relaxed text-white/50">
               {isPodium
-                ? 'The podium runs suspense then reveal for 4th → 3rd → 2nd → 1st, followed by all four together.'
+                ? `Each rank gets a suspense step and a reveal step, from ${to ?? 'last'} → ${from ?? 'first'}, followed by a group view.`
                 : 'The order ranks appear in the list. Grid pages reveal everyone together; Spotlight reveals one at a time.'}
             </p>
           </div>

@@ -18,6 +18,7 @@ const tierSchema = new mongoose.Schema(
     prize: { type: String, default: '', trim: true, maxlength: 200 },
     prizeAmount: { type: String, default: '', trim: true, maxlength: 60 },
     podiumPrizes: { type: [podiumPrizeSchema], default: null },
+    podiumMode: { type: String, enum: ['hybrid', 'podium', 'bot'], default: 'podium' },
     style: { type: String, required: true, enum: DISPLAY_STYLES },
     color: { type: String, default: '#38bdf8', lowercase: true, match: /^#([0-9a-f]{3}|[0-9a-f]{6})$/i },
     icon: { type: String, default: 'award', enum: TIER_ICONS },

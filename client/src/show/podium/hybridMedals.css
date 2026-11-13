@@ -1,0 +1,85 @@
+.hybrid-medals { container-type: inline-size; }
+.hybrid-medals__bot { z-index: 1; }
+.hybrid-medals__bot .bot-stage__artwork { left: 83%; top: 42%; height: 58%; }
+.hybrid-medals__positions { position: absolute; inset: 0; z-index: 2; pointer-events: none; transform-origin: center; transform: translate3d(0, 0, 0) scale(1); transition: transform .95s cubic-bezier(.18, .8, .2, 1); }
+.hybrid-medals__positions--zoom-bronze { transform: translate3d(43%, -32%, 0) scale(1.48); }
+.hybrid-medals__positions--zoom-silver { transform: translate3d(7%, 11%, 0) scale(1.48); }
+.hybrid-medals__positions--zoom-gold { transform: translate3d(-28%, 37%, 0) scale(1.48); }
+.hybrid-medals__positions--zoom-fourth { transform: translate3d(60%, -32%, 0) scale(1.48); }
+.hybrid-medals__spotlight { position: absolute; z-index: 0; top: 0; left: 50%; width: 34%; height: 94%; transform: translateX(-50%); pointer-events: none; clip-path: polygon(46% 0, 54% 0, 100% 100%, 0 100%); background: radial-gradient(ellipse 52% 46% at 50% var(--spotlight-y, 58%), var(--spotlight-color), transparent 100%), linear-gradient(180deg, #ffffff88, #ffffff30 42%, transparent 96%); animation: hybrid-spotlight-in .45s ease-out both; }
+.hybrid-medals__spotlight::before { content: ''; position: absolute; top: 0; left: 47%; width: 6%; height: 4%; border-radius: 50%; background: #ffffffcc; box-shadow: 0 0 2cqw #ffffffaa; }
+.hybrid-medals__spotlight--bronze { left: 21%; --spotlight-y: 78%; --spotlight-color: #ffb47799; }
+.hybrid-medals__spotlight--silver { left: 45%; --spotlight-y: 51%; --spotlight-color: #b8eaffaa; }
+.hybrid-medals__spotlight--gold { left: 69%; --spotlight-y: 35%; --spotlight-color: #ffe69cbb; }
+.hybrid-medals__spotlight--fourth { left: 9.5%; --spotlight-color: #b7a9ff99; }
+@keyframes hybrid-spotlight-in { from { opacity: 0; } to { opacity: 1; } }
+
+/* Fixed columns keep cards apart while each rank receives its spotlight. */
+.hybrid-medal { position: absolute; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; transform-origin: center bottom; color: var(--metal); transition: filter .45s ease; }
+.hybrid-medals__positions[class*="--zoom-"] .hybrid-medal:not(.hybrid-medal--active) { filter: brightness(.28); }
+.hybrid-medal--bronze { --metal: #eaa16a; --metal-light: #ffe1bd; --metal-deep: #9f4b27; --glow: #ff9c5799; left: 10%; bottom: 5%; width: 22%; }
+.hybrid-medal--silver { --metal: #b8e8ff; --metal-light: #ffffff; --metal-deep: #5386bb; --glow: #7ad5ff99; left: 34%; bottom: 28%; width: 22%; }
+.hybrid-medal--gold { --metal: #ffd05c; --metal-light: #fff3b9; --metal-deep: #b36b0b; --glow: #ffce4899; left: 58%; top: 2%; width: 22%; }
+.hybrid-medal--fourth { --metal: #b7a9ff; --metal-light: #f1eaff; --metal-deep: #6954bd; --glow: #a594ff99; left: 1%; bottom: 3%; width: 20%; }
+.hybrid-medal--active { z-index: 4; }
+.hybrid-medal--revealed { z-index: 3; }
+
+.hybrid-medal__caption { flex: 0 0 auto; width: 100%; min-width: 0; min-height: clamp(160px, 20vh, 210px); display: flex; justify-content: center; align-items: center; margin-bottom: min(2cqw, 3vh); }
+.hybrid-medal--gold .hybrid-medal__caption { margin-bottom: min(2cqw, 2vh); }
+.hybrid-medal__placeholder { max-width: 100%; padding: .7cqw 1.2cqw; border: 1.5px solid var(--metal); border-radius: 1cqw; background: #071a3ee8; color: white; font: 800 clamp(16px, 1.65cqw, 28px)/1.1 Montserrat, sans-serif; text-align: center; box-shadow: 0 0 1.2cqw var(--glow); }
+.hybrid-medal__card { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: min(.42cqw, 7px); width: 100%; min-width: 0; min-height: clamp(160px, 20vh, 210px); padding: clamp(10px, 1cqw, 18px); border: 2px solid var(--metal); border-radius: 1.2cqw; background: linear-gradient(150deg, #09234bf4, #061631f4); box-shadow: inset 0 0 1.5cqw var(--glow), 0 0 1.8cqw var(--glow); text-align: center; }
+.hybrid-medal--active .hybrid-medal__card { box-shadow: inset 0 0 2cqw var(--glow), 0 0 2.7cqw var(--glow); }
+.hybrid-medal--active .hybrid-medal__ring { box-shadow: 0 0 2.3cqw var(--metal), inset 0 0 1.3cqw var(--glow); }
+.hybrid-medal__label { display: flex; align-items: center; justify-content: center; gap: .4cqw; max-width: 100%; color: var(--metal-light); font: 800 clamp(12px, 1.12cqw, 18px)/1.1 Orbitron, sans-serif; text-transform: uppercase; }
+.hybrid-medal__label svg { width: 1.4cqw; height: 1.4cqw; flex: none; }
+.hybrid-medal__name { display: block; min-width: 0; max-width: 100%; color: white; font: 900 clamp(21px, 2.1cqw, 36px)/1.03 Montserrat, sans-serif; overflow-wrap: anywhere; text-wrap: balance; text-shadow: 0 0 1cqw var(--glow); }
+.hybrid-medal--gold .hybrid-medal__name { font-size: clamp(25px, 2.6cqw, 42px); }
+.hybrid-medal__school { max-width: 100%; color: #e1f3ff; font: 600 clamp(12px, 1.05cqw, 17px)/1.17 Poppins, sans-serif; overflow-wrap: anywhere; text-wrap: balance; }
+.hybrid-medal__prize { max-width: 100%; color: var(--metal-light); font: 700 clamp(12px, .99cqw, 16px)/1.2 Orbitron, sans-serif; overflow-wrap: anywhere; text-wrap: balance; }
+
+/* Dark glossy medallions, metallic laurel branches and a champion crown. */
+.hybrid-medal__laurel { position: relative; display: flex; flex: 0 0 auto; align-items: center; justify-content: center; box-sizing: border-box; width: min(11.8cqw, 18vh); min-width: 90px; aspect-ratio: 1 / 1; border-radius: 50%; background: radial-gradient(circle, #08182ce6 35%, #071a39af 64%, transparent 72%); transition: filter .45s ease; }
+.hybrid-medal--active .hybrid-medal__laurel { filter: drop-shadow(0 0 1.1cqw var(--metal)); }
+.hybrid-medal__laurel strong { position: relative; z-index: 1; display: grid; place-items: center; width: 62%; aspect-ratio: 1; color: var(--metal-light); font: 900 clamp(54px, 4.1cqw, 108px)/1 Orbitron, sans-serif; text-shadow: 0 0 1.1cqw var(--glow); }
+.hybrid-medal__wreath { position: absolute; inset: -25%; width: 150%; max-width: none; height: 150%; object-fit: contain; filter: drop-shadow(0 0 .4cqw #ffd558); }
+.hybrid-medal--silver .hybrid-medal__wreath { filter: grayscale(1) brightness(1.5) drop-shadow(0 0 .4cqw #80dbff); }
+.hybrid-medal--bronze .hybrid-medal__wreath { filter: sepia(1) saturate(1.5) hue-rotate(-33deg) brightness(.75) contrast(1.15) drop-shadow(0 0 .4cqw #ffa05a); }
+.hybrid-medal--fourth .hybrid-medal__wreath { filter: hue-rotate(190deg) saturate(.8) drop-shadow(0 0 .4cqw #b7a9ff); }
+.hybrid-medal__crown { position: absolute; z-index: 2; width: 34%; height: auto; top: -8%; left: 33%; color: #ffca4a; filter: drop-shadow(0 0 .55cqw #ffd23f); }
+.hybrid-medal__ring { position: relative; flex: 0 0 auto; width: 13.5cqw; height: 2.15cqw; margin-top: 1.1cqw; border: .3cqw solid var(--metal); border-radius: 50%; box-shadow: 0 0 1.5cqw var(--metal), inset 0 0 1cqw var(--glow); transform: perspective(90px) rotateX(22deg); }
+.hybrid-medal__ring i { position: absolute; inset: 28% 12%; border: 1px solid var(--metal-light); border-radius: 50%; opacity: .65; }
+
+.hybrid-medals__positions--four .hybrid-medal { width: 17%; }
+.hybrid-medals__positions--four .hybrid-medal--fourth { left: 1%; bottom: 3%; }
+.hybrid-medals__positions--four .hybrid-medal--bronze { left: 19%; bottom: 12%; }
+.hybrid-medals__positions--four .hybrid-medal--silver { left: 37%; bottom: 24%; }
+.hybrid-medals__positions--four .hybrid-medal--gold { left: 55%; top: 4%; }
+.hybrid-medals__positions--four .hybrid-medal__name { font-size: clamp(18px, 1.65cqw, 33px); }
+
+@media (min-height: 1000px) {
+  .hybrid-medal--silver { bottom: 38%; }
+}
+
+@media (max-aspect-ratio: 4/5) {
+  .hybrid-medals__positions--zoom-bronze { transform: translate3d(50%, -32%, 0) scale(1.48); }
+  .hybrid-medals__positions--zoom-silver { transform: translate3d(1%, 11%, 0) scale(1.48); }
+  .hybrid-medals__positions--zoom-gold { transform: translate3d(-47%, 37%, 0) scale(1.48); }
+  .hybrid-medals__spotlight--bronze { left: 16%; }
+  .hybrid-medals__spotlight--silver { left: 49%; }
+  .hybrid-medals__spotlight--gold { left: 82%; }
+  .hybrid-medals__bot .bot-stage__artwork { left: 84%; top: 56%; width: 40vw; height: auto; }
+  .hybrid-medal--bronze { left: 1%; bottom: 4%; width: 30%; }
+  .hybrid-medal--silver { left: 34%; bottom: 13%; width: 30%; }
+  .hybrid-medal--gold { left: 67%; top: 12%; width: 30%; }
+  .hybrid-medal__caption { min-height: clamp(105px, 14vh, 150px); }
+  .hybrid-medal__card { min-height: clamp(105px, 14vh, 150px); padding: .8cqw .5cqw; }
+  .hybrid-medal__name { font-size: clamp(16px, 2.1cqw, 28px); }
+  .hybrid-medal--gold .hybrid-medal__name { font-size: clamp(17px, 2.4cqw, 31px); }
+  .hybrid-medal__laurel { width: min(13cqw, 22vh); min-width: 62px; }
+  .hybrid-medal__laurel strong { font-size: clamp(30px, 4.1cqw, 70px); }
+  .hybrid-medal__ring { width: 15cqw; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hybrid-medals__spotlight { animation: none; }
+  .hybrid-medals__positions { transition: none; }
+}

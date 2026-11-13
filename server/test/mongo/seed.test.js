@@ -45,6 +45,21 @@ describe('seedMongo', () => {
     assert.deepEqual(await AppSettings.findById('settings').lean(), before.settings)
   })
 
+  test('upgrades only the old default Top 4 layout to Hybrid Top 3', async () => {
+    const champions = await Tier.findOne({ name: 'The Champions' }).lean()
+    const previous = await Tier.findOne({ name: 'Top 20 Stars' }).lean()
+    await Tier.collection.updateOne({ _id: champions._id }, { $set: { rankTo: 4, subtitle: 'Ranks 1 – 4' }, $unset: { podiumMode: '' } })
+    await Tier.collection.updateOne({ _id: previous._id }, { $set: { rankFrom: 5, subtitle: 'Ranks 5 – 20' }, $unset: { podiumMode: '' } })
+
+    await seedMongo(mongo.repo, opts)
+    const upgraded = await mongo.repo.tiers.list()
+    assert.deepEqual(upgraded.slice(3).map((tier) => [tier.rankFrom, tier.rankTo, tier.podiumMode]), [
+      [4, 20, 'podium'], [1, 3, 'hybrid'],
+    ])
+    await seedMongo(mongo.repo, opts)
+    assert.equal((await Tier.findById(champions._id).lean()).rankTo, 3)
+  })
+
   test('deleting every tier is respected on the next boot; an empty admins collection is re-seeded', async () => {
     await Tier.deleteMany({})
     await Admin.deleteMany({})

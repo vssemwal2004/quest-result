@@ -13,6 +13,9 @@ import { CAMERA_FOV } from './framing'
 import { PodiumNameplate, PodiumTitle } from './PodiumOverlays'
 import { PodiumScene } from './PodiumScene'
 import { buildSlots } from './slots'
+import { BotRevealStage } from './BotRevealStage'
+import { HybridMedalStage } from './HybridMedalStage'
+import { ChampionFireworks } from './ChampionFireworks'
 
 /** dpr caps keep fill-rate sane on 4K projectors and integrated GPUs. */
 const DPR: Record<Quality, number | [number, number]> = { high: [1, 1.5], medium: [1, 1.25], low: 1 }
@@ -47,11 +50,21 @@ function celebrateChampion(fire: (o: confetti.Options) => void, quality: Quality
   return shots.map(([ms, options]) => window.setTimeout(() => fire(options), ms))
 }
 
+/** A smaller metal-coloured burst lands with each runner-up reveal. */
+function celebrateRunnerUp(fire: (o: confetti.Options) => void, quality: Quality, place: 'silver' | 'bronze'): number[] {
+  const count = quality === 'low' ? 22 : quality === 'medium' ? 38 : 55
+  const colors = place === 'silver' ? ['#f7fbff', '#b6e9ff', '#8eaad0', '#38e1ff'] : ['#ffe5b9', '#e8954a', '#bd622d', '#ffd23f']
+  return [
+    window.setTimeout(() => fire({ particleCount: count, angle: 68, spread: 52, startVelocity: 53, origin: { x: 0.12, y: 0.94 }, colors }), 180),
+    window.setTimeout(() => fire({ particleCount: count, angle: 112, spread: 52, startVelocity: 53, origin: { x: 0.88, y: 0.94 }, colors }), 390),
+  ]
+}
+
 /**
  * step 0 = title; odd steps focus an anonymous winner; even steps reveal that winner;
- * the final step brings all four winners together.
+ * the final step brings all winners together.
  */
-export function PodiumStage({ stage, step, quality, reducedMotion }: StageProps) {
+function Podium3DStage({ stage, step, quality, reducedMotion }: StageProps) {
   const tier = stage.tier
   const unitPx = useStageUnit()
   const { canvasRef, fire } = useConfettiCanvas()
@@ -88,10 +101,15 @@ export function PodiumStage({ stage, step, quality, reducedMotion }: StageProps)
       return
     }
     setFocus({ x: newest.x, hold: step % 2 === 1, id: performance.now() })
-    if (step > prev && step % 2 === 0 && newest.kind === 'gold' && !reducedMotion) timers.current.push(...celebrateChampion(fire, quality))
+    if (step > prev && step % 2 === 0 && !reducedMotion) {
+      if (newest.kind === 'gold') timers.current.push(...celebrateChampion(fire, quality))
+      else if (newest.kind === 'silver' || newest.kind === 'bronze') timers.current.push(...celebrateRunnerUp(fire, quality, newest.kind))
+    }
   }, [step, slots, fire, quality, reducedMotion, stage.studentCount])
 
   if (!tier) return null
+  const championReveal = step > 0 && step <= stage.studentCount * 2 && step % 2 === 0
+    && slots.some((slot) => slot.kind === 'gold' && slot.student !== null)
 
   return (
     <StageFrame accentColor={tier.color}>
@@ -118,11 +136,18 @@ export function PodiumStage({ stage, step, quality, reducedMotion }: StageProps)
           </Suspense>
         </Canvas>
       </div>
+      {championReveal && <ChampionFireworks quality={quality} reducedMotion={reducedMotion} />}
       {/* Above the WebGL canvas, below the winner cards (drei <Html> z-index 10–20). */}
-      <canvas ref={canvasRef} aria-hidden className="absolute inset-0 h-full w-full" />
+      <canvas ref={canvasRef} aria-hidden className="absolute inset-0 z-[2] h-full w-full" />
       <AnimatePresence>
         {step <= 0 ? <PodiumTitle key="title" tier={tier} reducedMotion={reducedMotion} /> : <PodiumNameplate key="plate" tier={tier} compact={step > stage.studentCount * 2} />}
       </AnimatePresence>
     </StageFrame>
   )
+}
+
+/** Keep each presentation mode available without switching scenes mid-reveal. */
+export function PodiumStage(props: StageProps) {
+  if (props.stage.tier?.podiumMode === 'hybrid') return <HybridMedalStage {...props} />
+  return props.stage.tier?.podiumMode === 'bot' ? <BotRevealStage {...props} /> : <Podium3DStage {...props} />
 }

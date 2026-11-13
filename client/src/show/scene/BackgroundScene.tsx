@@ -18,6 +18,7 @@ import { CAMERA, CEILING, LEVELS, type QualityLevel, type SceneMode, type SceneS
 
 export interface BackgroundSceneProps {
   mode: SceneMode
+  podiumCanvasActive: boolean
   /** Hex accent; the scene eases toward it. */
   accent: string
   /** Quality CEILING from settings; the scene adapts below it at runtime. */
@@ -71,7 +72,7 @@ function DebugProbe() {
   return <Stats />
 }
 
-type SceneContentsProps = Omit<BackgroundSceneProps, 'quality' | 'onReady' | 'showFps'> & {
+type SceneContentsProps = Omit<BackgroundSceneProps, 'quality' | 'onReady' | 'showFps' | 'podiumCanvasActive'> & {
   level: QualityLevel
   pointer: MutableRefObject<{ x: number; y: number }>
 }
@@ -137,7 +138,7 @@ function useDocumentHidden(): boolean {
  * Quality adapts at runtime below the configured ceiling. Falls back to a static CSS rendition if the
  * context is lost or the scene throws.
  */
-export function BackgroundScene({ quality, onReady, showFps = false, ...sceneProps }: BackgroundSceneProps) {
+export function BackgroundScene({ quality, onReady, showFps = false, podiumCanvasActive, ...sceneProps }: BackgroundSceneProps) {
   const { mode, accent } = sceneProps
   const [failed, setFailed] = useState(false)
   const pointer = useRef({ x: 0, y: 0 })
@@ -169,13 +170,13 @@ export function BackgroundScene({ quality, onReady, showFps = false, ...scenePro
   // The podium stage brings its own Canvas: stop redrawing once the robot has left the frame.
   const [podiumIdle, setPodiumIdle] = useState(false)
   useEffect(() => {
-    if (mode !== 'podium') {
+    if (mode !== 'podium' || !podiumCanvasActive) {
       setPodiumIdle(false)
       return
     }
     const id = window.setTimeout(() => setPodiumIdle(true), 1600)
     return () => window.clearTimeout(id)
-  }, [mode])
+  }, [mode, podiumCanvasActive])
 
   useEffect(() => {
     const onMove = (e: PointerEvent) => {

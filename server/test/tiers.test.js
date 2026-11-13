@@ -29,13 +29,14 @@ describe('tiers', () => {
         ['Merit Achievers', 151, 200, 'grid', '#38bdf8', 'award', 0],
         ['Rising Innovators', 101, 150, 'grid', '#60a5fa', 'star', 1],
         ['AI Explorers', 21, 100, 'grid', '#818cf8', 'rocket', 2],
-        ['Top 20 Stars', 5, 20, 'spotlight', '#c084fc', 'medal', 3],
-        ['The Champions', 1, 4, 'podium', '#facc15', 'crown', 4],
+        ['Top 20 Stars', 4, 20, 'spotlight', '#c084fc', 'medal', 3],
+        ['The Champions', 1, 3, 'podium', '#facc15', 'crown', 4],
       ],
     )
     assert.equal(list[3].sortDirection, 'desc')
     assert.equal(list[4].prizeAmount, 'Up to ₹1 Lakh')
     assert.equal(list[4].prize, 'Cash Prizes + Exciting Scholarships')
+    assert.equal(list[4].podiumMode, 'hybrid')
   })
 
   it('creates a tier appended to the end with defaults', async () => {
@@ -79,7 +80,34 @@ describe('tiers', () => {
     const widen = await api('PUT', `/api/admin/tiers/${champions.id}`, { json: { rankTo: 5 } })
     assert.equal(widen.status, 400)
     const unchanged = (await tiers()).find((t) => t.id === champions.id)
-    assert.equal(unchanged.rankTo, 4, 'failed update leaves the tier untouched')
+    assert.equal(unchanged.rankTo, 3, 'failed update leaves the tier untouched')
+  })
+
+  it('switches podium modes while keeping ranks and protecting unrevealed Hybrid names', async () => {
+    await addStudents(api, null, [student(1), student(2), student(3)])
+    const champion = (await tiers()).find((tier) => tier.style === 'podium')
+    const initialShow = (await api('GET', '/api/admin/show')).body
+    const stageIndex = initialShow.stages.findIndex((stage) => stage.title === 'The Champions')
+    await api('POST', '/api/admin/presentation/goto', { json: { stageIndex, step: 5 } })
+    for (const podiumMode of ['podium', 'bot', 'hybrid']) {
+      const response = await api('PUT', `/api/admin/tiers/${champion.id}`, { json: { podiumMode } })
+      assert.equal(response.status, 200)
+      assert.equal(response.body.tier.podiumMode, podiumMode)
+      const show = (await api('GET', '/api/admin/show')).body.stages.find((stage) => stage.title === 'The Champions')
+      assert.equal(show.tier.podiumMode, podiumMode)
+      assert.deepEqual([show.tier.rankFrom, show.tier.rankTo, show.stepCount], [1, 3, podiumMode === 'hybrid' ? 9 : 8])
+      assert.deepEqual(show.revealRanks, [3, 2, 1])
+      const publicShow = (await srv.request('GET', '/api/public/show')).body
+      assert.equal(publicShow.state.step, 5)
+      assert.deepEqual(publicShow.stages[stageIndex].students.map((student) => student.rank), podiumMode === 'hybrid' ? [3] : [3, 2], 'only completed reveals are public')
+    }
+    await api('POST', '/api/admin/presentation/goto', { json: { stageIndex, step: 6 } })
+    assert.deepEqual((await srv.request('GET', '/api/public/show')).body.stages[stageIndex].students.map((student) => student.rank), [3, 2], 'silver reveal completes')
+    await api('POST', '/api/admin/presentation/goto', { json: { stageIndex, step: 7 } })
+    assert.deepEqual((await srv.request('GET', '/api/public/show')).body.stages[stageIndex].students.map((student) => student.rank), [3, 2], 'champion is hidden during gold shuffle')
+    await api('POST', '/api/admin/presentation/goto', { json: { stageIndex, step: 8 } })
+    assert.deepEqual((await srv.request('GET', '/api/public/show')).body.stages[stageIndex].students.map((student) => student.rank), [3, 2, 1])
+    assert.equal((await api('PUT', `/api/admin/tiers/${champion.id}`, { json: { podiumMode: 'unknown' } })).status, 400)
   })
 
   it('validates enums and colors', async () => {
@@ -165,16 +193,16 @@ describe('tiers', () => {
       focus.body.tiers.map((t) => [t.rankFrom, t.rankTo, t.style]),
       [
         [11, 200, 'grid'],
-        [5, 10, 'spotlight'],
-        [1, 4, 'podium'],
+        [4, 10, 'spotlight'],
+        [1, 3, 'podium'],
       ],
     )
     const quick = await api('POST', '/api/admin/tiers/apply-preset', { json: { key: 'quick-3' } })
     assert.deepEqual(
       quick.body.tiers.map((t) => [t.rankFrom, t.rankTo, t.style]),
       [
-        [5, 200, 'grid'],
-        [1, 4, 'podium'],
+        [4, 200, 'grid'],
+        [1, 3, 'podium'],
       ],
     )
     assert.equal((await api('POST', '/api/admin/tiers/apply-preset', { json: { key: 'nope' } })).status, 404)
@@ -222,7 +250,7 @@ describe('tiers', () => {
 describe('presentation and overview', () => {
   it('navigates next/prev/goto/reset with spec semantics', async () => {
     await api('POST', '/api/admin/tiers/apply-preset', { json: { key: 'quick-3' } })
-    await addStudents(api, null, [student(1), student(2), student(3), student(4)])
+    await addStudents(api, null, [student(1), student(2), student(3)])
     const step = async (route, json) => (await api('POST', `/api/admin/presentation/${route}`, { json })).body.state
     const pos = (s) => [s.stageIndex, s.step]
 
@@ -231,7 +259,7 @@ describe('presentation and overview', () => {
     assert.deepEqual(pos(await step('next')), [2, 1])
     assert.deepEqual(pos(await step('prev')), [2, 0])
     assert.deepEqual(pos(await step('goto', { stageIndex: 3 })), [3, 0])
-    assert.deepEqual(pos(await step('prev')), [2, 9])
+    assert.deepEqual(pos(await step('prev')), [2, 8])
     assert.deepEqual(pos(await step('goto', { stageIndex: 42, step: 9 })), [3, 0])
     assert.deepEqual(pos(await step('next')), [3, 0])
     assert.deepEqual(pos(await step('reset')), [0, 0])
@@ -250,13 +278,13 @@ describe('presentation and overview', () => {
     const adminShow = (await api('GET', '/api/admin/show')).body
     assert.deepEqual(
       adminShow.stages.find((s) => s.title === 'The Champions').students.map((s) => s.rank),
-      [4, 3, 2, 1],
+      [3, 2, 1],
     )
     assert.equal((await srv.request('GET', '/api/admin/show')).status, 401)
 
     await api('PUT', '/api/admin/settings', { json: { spoilerProtection: false } })
     const open = (await srv.request('GET', '/api/public/show')).body
-    assert.equal(open.stages.find((s) => s.title === 'Top 20 Stars').students.length, 16)
+    assert.equal(open.stages.find((s) => s.title === 'Top 20 Stars').students.length, 17)
     await api('PUT', '/api/admin/settings', { json: { spoilerProtection: true } })
   })
 
@@ -266,7 +294,7 @@ describe('presentation and overview', () => {
     assert.equal(o.studentCount, 4)
     assert.equal(o.tierCount, 5)
     const champions = o.tiers.find((t) => t.tier.name === 'The Champions')
-    assert.deepEqual([champions.studentCount, champions.expected], [2, 4])
+    assert.deepEqual([champions.studentCount, champions.expected], [2, 3])
     assert.deepEqual(
       o.unassignedStudents.map((s) => s.rank),
       [250],

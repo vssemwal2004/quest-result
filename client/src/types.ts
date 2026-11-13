@@ -1,6 +1,7 @@
 // Mirrors docs/SPEC.md exactly. Keep in sync with the server.
 
 export type DisplayStyle = 'scroll' | 'grid' | 'spotlight' | 'podium'
+export type PodiumMode = 'hybrid' | 'podium' | 'bot'
 export type TierIcon = 'trophy' | 'medal' | 'star' | 'award' | 'crown' | 'rocket' | 'sparkles'
 export type Quality = 'high' | 'medium' | 'low'
 
@@ -37,6 +38,7 @@ export interface Tier {
   prizeAmount: string
   /** Null keeps the shared tier prize for podium winners. */
   podiumPrizes: PodiumPrize[] | null
+  podiumMode: PodiumMode
   style: DisplayStyle
   color: string
   icon: TierIcon

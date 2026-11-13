@@ -97,16 +97,22 @@ export function buildSlots(tier: PublicTier, students: PublicStudent[], step: nu
   const suspense = step > 0 && step % 2 === 1 && !groupStep
   const visibleStudents = groupStep ? students : suspense ? [] : students.filter((s) => s.rank === activeRank)
   const layout = span === 4 ? FOUR_LAYOUT : THREE_LAYOUT
-  return KINDS.slice(0, Math.max(1, span)).map((kind, offset) => {
+  const slots = KINDS.slice(0, Math.max(1, span)).map((kind, offset) => {
     const rank = tier.rankFrom + offset
     const student = visibleStudents.find((s) => s.rank === rank) ?? null
     const order = revealRanks.indexOf(rank)
     const revealed = order >= 0 && (groupStep || step >= (order + 1) * 2)
     return { kind, rank, ...layout[kind], student, order, revealed, suspense: suspense && rank === activeRank }
   })
+  if (tier.podiumMode !== 'hybrid') return slots
+
+  // The top rank belongs to the bot in Hybrid. Center the remaining blocks,
+  // with 3rd on the left and 2nd on the right for the default Top 3 tier.
+  const podiumSlots = slots.filter((slot) => slot.kind !== 'gold').sort((a, b) => b.rank - a.rank)
+  return podiumSlots.map((slot, index) => ({ ...slot, x: (index - (podiumSlots.length - 1) / 2) * BLOCK.spacing }))
 }
 
-/** Rank labels for the overall Top 4. */
+/** Rank labels for podium tiers of up to four places. */
 export function medalLabel(tier: PublicTier, slot: PodiumSlot): string {
   if (tier.rankFrom !== 1) return `Rank #${slot.rank}`
   return slot.kind === 'gold' ? 'Champion' : slot.kind === 'silver' ? '1st Runner-up' : slot.kind === 'bronze' ? '2nd Runner-up' : '4th Place'

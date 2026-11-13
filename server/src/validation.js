@@ -81,6 +81,7 @@ const tierObject = z.object({
     prize: z.string().trim().max(200),
     prizeAmount: z.string().trim().max(60),
   }).strict()).max(4).nullable().default(null),
+  podiumMode: z.enum(['hybrid', 'podium', 'bot']).default('podium'),
   style: z.enum(DISPLAY_STYLES),
   color: hexColor.default('#38bdf8'),
   icon: z.enum(TIER_ICONS).default('award'),

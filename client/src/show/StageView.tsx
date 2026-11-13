@@ -6,8 +6,7 @@ import type { StageProps } from './contracts'
 import { IntroStage } from './intro/IntroStage'
 import { ShowErrorBoundary } from './ShowErrorBoundary'
 
-// The podium is the only stage that pulls in three.js; load it on demand (it is prefetched by
-// ShowPage once the intro is up, so it is warm long before the Champions are revealed).
+// Load the Champions presenters on demand; prefetch after the intro so both renderers are ready.
 const PodiumStage = lazy(() => import('@/show/podium/PodiumStage').then((m) => ({ default: m.PodiumStage })))
 export const prefetchPodium = () => void import('@/show/podium/PodiumStage').catch(() => undefined)
 

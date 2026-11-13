@@ -11,6 +11,7 @@ import { Countdown } from './intro/Countdown'
 import { CssBackground } from './scene/CssBackground'
 import { sceneModeFor, stageAccent } from './stageMeta'
 import { prefetchPodium, StageView } from './StageView'
+import { usesBot } from './podium/presentationMode'
 import { useEffectiveQuality } from './useEffectiveQuality'
 import { useIdle } from './useIdle'
 import { useShow } from './useShow'
@@ -121,6 +122,7 @@ export default function ShowPage() {
           <Suspense fallback={null}>
             <BackgroundScene
               mode={ready ? sceneModeFor(stage) : 'boot'}
+              podiumCanvasActive={stage?.tier?.style === 'podium' && !usesBot(stage, position.step)}
               accent={accent}
               quality={quality}
               reducedMotion={reducedMotion}

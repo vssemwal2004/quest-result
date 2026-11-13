@@ -282,6 +282,18 @@ describe('spoiler protection', () => {
     assert.equal(sparse.stepCount, 8)
   })
 
+  it('runs one Hybrid scene from bot greeting through bronze, silver and gold reveals', () => {
+    const hybrid = buildStages(makeDb({ tiers: [tier('champions', 1, 3, 'podium', 0, { podiumMode: 'hybrid' })] }))[1]
+    assert.equal(hybrid.stepCount, 9)
+    assert.deepEqual(hybrid.revealRanks, [3, 2, 1])
+    for (const [step, expected] of [[0, []], [1, []], [2, []], [3, []], [4, [3]], [5, [3]], [6, [3, 2]], [7, [3, 2]], [8, [3, 2, 1]]]) {
+      const visible = filterForPublic([buildStages(makeDb())[0], { ...hybrid, index: 1 }], { stageIndex: 1, step }, settings)[1]
+      assert.deepEqual(ranksOf(visible), expected)
+    }
+    const sparse = buildStages(makeDb({ tiers: [tier('champions', 1, 3, 'podium', 0, { podiumMode: 'hybrid' })], students: students.filter((student) => student.rank !== 1) }))[1]
+    assert.equal(sparse.stepCount, 7, 'the bot greets and the medal layout appears even with a missing champion')
+  })
+
   it('past stages are fully revealed', () => {
     const v = view(4, 0)
     assert.deepEqual(ranksOf(v[1]), [9, 10, 11, 12])

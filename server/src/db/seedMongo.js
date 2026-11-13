@@ -4,9 +4,35 @@
  * Defaults and presets come from ../seed.js (single source of truth).
  */
 import { DEFAULT_ADMIN, presetTiers } from '../seed.js'
-import { META_IDS } from './models/index.js'
+import { META_IDS, Tier } from './models/index.js'
 
 export const DEFAULT_TIER_PRESET = 'classic-5'
+
+/** Upgrade only an untouched legacy Top 4 preset; keep custom tiers and individual prizes intact. */
+async function upgradeLegacyChampions() {
+  const champion = await Tier.findOne({
+    name: 'The Champions', rankFrom: 1, rankTo: 4, style: 'podium',
+    podiumMode: { $exists: false }, podiumPrizes: null,
+    prize: 'Cash Prizes + Exciting Scholarships', prizeAmount: 'Up to ₹1 Lakh',
+  }).lean()
+  if (!champion) return false
+
+  const previous = await Tier.findOne({ order: champion.order - 1, rankFrom: 5, podiumMode: { $exists: false } }).lean()
+  const oldPreset = [
+    ['Top 20 Stars', 20, 'spotlight'],
+    ['Top 10 Stars', 10, 'spotlight'],
+    ['AI Quest Winners', 200, 'grid'],
+  ]
+  if (!previous || !oldPreset.some(([name, to, style]) => previous.name === name && previous.rankTo === to && previous.style === style)) return false
+
+  await Tier.updateOne({ _id: champion._id, rankTo: 4, podiumMode: { $exists: false } }, {
+    $set: { rankTo: 3, podiumMode: 'hybrid', ...(champion.subtitle === 'Ranks 1 – 4' ? { subtitle: 'Ranks 1 – 3' } : {}) },
+  })
+  await Tier.updateOne({ _id: previous._id, rankFrom: 5 }, {
+    $set: { rankFrom: 4, ...(previous.subtitle === `Ranks 5 – ${previous.rankTo}` ? { subtitle: `Ranks 4 – ${previous.rankTo}` } : {}) },
+  })
+  return true
+}
 
 /**
  * @param {ReturnType<import('./repository.js').createRepository>} repo
@@ -35,6 +61,10 @@ export async function seedMongo(
   }
 
   created.showState = await repo.show.ensure()
+  if (await upgradeLegacyChampions()) {
+    await repo.show.syncAfterChange()
+    logger.info?.('[db] upgraded the default Champions tier to Top 3 Hybrid')
+  }
 
   const what = Object.entries(created)
     .filter(([, v]) => v)
