@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import type confetti from 'canvas-confetti'
 import { Crown, Medal } from 'lucide-react'
@@ -28,23 +28,28 @@ function labelFor(rank: number, first: number) {
 function celebrate(fire: (options: confetti.Options) => void, rank: number, first: number) {
   const colors = rank === first ? GOLD_CONFETTI : rank === first + 1
     ? ['#eaf8ff', '#a6dfff', '#819cc7', '#42dfff'] : ['#ffdba4', '#f6a65c', '#a85a2d', '#fff0c3']
-  const count = rank === first ? 120 : rank === first + 1 ? 90 : 60
+  const count = rank === first ? 90 : rank === first + 1 ? 65 : 45
   const velocity = rank === first ? 48 : rank === first + 1 ? 43 : 38
-  const centerX = .5
-  const originY = .76
-  return [
-    window.setTimeout(() => fire({ particleCount: count, angle: 70, spread: 62, startVelocity: velocity, origin: { x: centerX - .08, y: originY }, colors }), 850),
-    window.setTimeout(() => fire({ particleCount: count, angle: 110, spread: 62, startVelocity: velocity, origin: { x: centerX + .08, y: originY }, colors }), 1010),
+  const bursts = [
+    { x: .25, y: .78, angle: 65, delay: 850 },
+    { x: .75, y: .78, angle: 115, delay: 950 },
+    { x: .28, y: .20, angle: 315, delay: 1060 },
+    { x: .72, y: .20, angle: 225, delay: 1160 },
   ]
+  return bursts.map(({ x, y, angle, delay }) => window.setTimeout(() => fire({
+    particleCount: count, angle, spread: 62, startVelocity: velocity,
+    origin: { x, y }, colors,
+  }), delay))
 }
 
-function MedalPosition({ rank, first, student, active, shuffling, reducedMotion, tier }: {
-  rank: number; first: number; student?: PublicStudent; active: boolean; shuffling: boolean; reducedMotion: boolean; tier: PublicTier
+function MedalPosition({ rank, first, student, active, shuffling, celebrating, reducedMotion, tier }: {
+  rank: number; first: number; student?: PublicStudent; active: boolean; shuffling: boolean; celebrating: boolean; reducedMotion: boolean; tier: PublicTier
 }) {
   const place = rank === first ? 'gold' : rank === first + 1 ? 'silver' : rank === first + 2 ? 'bronze' : 'fourth'
   const prize = student ? prizeFor(tier, rank) : ''
+  const sparkCount = place === 'gold' ? 14 : place === 'silver' ? 10 : 7
   return (
-    <motion.div className={`hybrid-medal hybrid-medal--${place} ${active ? 'hybrid-medal--active' : ''} ${student ? 'hybrid-medal--revealed' : ''}`}
+    <motion.div className={`hybrid-medal hybrid-medal--${place} ${active ? 'hybrid-medal--active' : ''} ${student ? 'hybrid-medal--revealed' : ''} ${celebrating ? 'hybrid-medal--celebrating' : ''}`}
       initial={reducedMotion ? false : { opacity: 0, scale: .7, y: 30 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
       transition={{ duration: reducedMotion ? .1 : .55, ease: 'easeOut' }}>
@@ -70,6 +75,9 @@ function MedalPosition({ rank, first, student, active, shuffling, reducedMotion,
         </svg>}
         <img className="hybrid-medal__wreath" src="/medal-laurel.png" alt="" />
         <strong>#{rank}</strong>
+        {celebrating && <span className="hybrid-medal__sparks" aria-hidden>
+          {Array.from({ length: sparkCount }, (_, index) => <i key={index} style={{ '--spark-angle': `${index * 360 / sparkCount}deg`, '--spark-delay': `${index % 3 * .1}s` } as CSSProperties} />)}
+        </span>}
       </div>
       <div className="hybrid-medal__ring" aria-hidden><i /></div>
     </motion.div>
@@ -147,7 +155,8 @@ export function HybridMedalStage({ stage, step, reducedMotion }: StageProps) {
         {ranks.map((rank, index) => {
           const student = step >= 4 + index * 2 ? stage.students.find((person) => person.rank === rank) : undefined
           return <MedalPosition key={rank} rank={rank} first={tier.rankFrom} student={student} active={index === activeIndex}
-            shuffling={index === activeIndex && shuffling} reducedMotion={reducedMotion} tier={tier} />
+            shuffling={index === activeIndex && shuffling} celebrating={index === activeIndex && step >= 4 && step % 2 === 0 && !reducedMotion}
+            reducedMotion={reducedMotion} tier={tier} />
         })}
       </div>}
       </>}

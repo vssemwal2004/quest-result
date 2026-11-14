@@ -40,6 +40,13 @@
 /* Dark glossy medallions, metallic laurel branches and a champion crown. */
 .hybrid-medal__laurel { position: relative; display: flex; flex: 0 0 auto; align-items: center; justify-content: center; box-sizing: border-box; width: min(11.8cqw, 18vh); min-width: 90px; aspect-ratio: 1 / 1; border-radius: 50%; background: radial-gradient(circle, #08182ce6 35%, #071a39af 64%, transparent 72%); transition: filter .45s ease; }
 .hybrid-medal--active .hybrid-medal__laurel { filter: drop-shadow(0 0 1.1cqw var(--metal)); }
+.hybrid-medal--celebrating .hybrid-medal__laurel::after { content: ''; position: absolute; inset: -16%; border: .18cqw solid var(--metal-light); border-radius: 50%; pointer-events: none; animation: hybrid-medal-pulse 1.2s ease-out 2 both; }
+.hybrid-medal__sparks { position: absolute; z-index: 3; inset: 0; pointer-events: none; --spark-distance: -6cqw; }
+.hybrid-medal--silver .hybrid-medal__sparks { --spark-distance: -7.5cqw; }
+.hybrid-medal--gold .hybrid-medal__sparks { --spark-distance: -9cqw; }
+.hybrid-medal__sparks i { position: absolute; left: 48%; top: 48%; width: clamp(5px, .6cqw, 11px); aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle, #fff 0 26%, var(--metal) 45%, transparent 75%); opacity: 0; animation: hybrid-medal-spark 1.8s ease-out var(--spark-delay) both; }
+@keyframes hybrid-medal-pulse { 0% { opacity: .95; transform: scale(.7); } 100% { opacity: 0; transform: scale(1.4); } }
+@keyframes hybrid-medal-spark { 0% { opacity: 0; transform: rotate(var(--spark-angle)) translateY(-3cqw) scale(.2); } 16% { opacity: 1; } 65% { opacity: .9; } 100% { opacity: 0; transform: rotate(var(--spark-angle)) translateY(var(--spark-distance)) scale(.6); } }
 .hybrid-medal__laurel strong { position: relative; z-index: 1; display: grid; place-items: center; width: 62%; aspect-ratio: 1; color: var(--metal-light); font: 900 clamp(54px, 4.1cqw, 108px)/1 Orbitron, sans-serif; text-shadow: 0 0 1.1cqw var(--glow); }
 .hybrid-medal__wreath { position: absolute; inset: -25%; width: 150%; max-width: none; height: 150%; object-fit: contain; filter: drop-shadow(0 0 .4cqw #ffd558); }
 .hybrid-medal--silver .hybrid-medal__wreath { filter: grayscale(1) brightness(1.5) drop-shadow(0 0 .4cqw #80dbff); }
@@ -82,4 +89,5 @@
 @media (prefers-reduced-motion: reduce) {
   .hybrid-medals__spotlight { animation: none; }
   .hybrid-medals__positions { transition: none; }
+  .hybrid-medal--celebrating .hybrid-medal__laurel::after, .hybrid-medal__sparks i { animation: none; }
 }
