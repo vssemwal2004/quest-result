@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
+import { createPortal } from 'react-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import type confetti from 'canvas-confetti'
 import { Crown, Medal } from 'lucide-react'
@@ -28,16 +29,39 @@ function labelFor(rank: number, first: number) {
 function celebrate(fire: (options: confetti.Options) => void, rank: number, first: number) {
   const colors = rank === first ? GOLD_CONFETTI : rank === first + 1
     ? ['#eaf8ff', '#a6dfff', '#819cc7', '#42dfff'] : ['#ffdba4', '#f6a65c', '#a85a2d', '#fff0c3']
-  const count = rank === first ? 90 : rank === first + 1 ? 65 : 45
-  const velocity = rank === first ? 48 : rank === first + 1 ? 43 : 38
-  const bursts = [
-    { x: .25, y: .78, angle: 65, delay: 850 },
-    { x: .75, y: .78, angle: 115, delay: 950 },
-    { x: .28, y: .20, angle: 315, delay: 1060 },
-    { x: .72, y: .20, angle: 225, delay: 1160 },
+  const count = rank === first ? 80 : rank === first + 1 ? 60 : rank === first + 2 ? 46 : 40
+  const velocity = rank === first ? 52 : rank === first + 1 ? 43 : 38
+  const secondPlaceBursts = [
+    { x: .02, y: .54, angle: 20, delay: 760 },
+    { x: .98, y: .54, angle: 160, delay: 850 },
+    { x: .05, y: .97, angle: 65, delay: 940 },
+    { x: .95, y: .97, angle: 115, delay: 1030 },
+    { x: .08, y: .03, angle: 315, delay: 1120 },
+    { x: .92, y: .03, angle: 225, delay: 1210 },
+    { x: .5, y: .02, angle: 270, delay: 990 },
+    { x: .5, y: .98, angle: 90, delay: 1080 },
   ]
+  const bursts = rank === first
+    ? [
+      ...secondPlaceBursts,
+      { x: .02, y: .26, angle: 5, delay: 820 },
+      { x: .98, y: .26, angle: 175, delay: 910 },
+      { x: .02, y: .78, angle: 25, delay: 1100 },
+      { x: .98, y: .78, angle: 155, delay: 1190 },
+      { x: .3, y: .02, angle: 290, delay: 1280 },
+      { x: .7, y: .02, angle: 250, delay: 1360 },
+      { x: .3, y: .98, angle: 75, delay: 1440 },
+      { x: .7, y: .98, angle: 105, delay: 1520 },
+    ]
+    : rank === first + 1 ? secondPlaceBursts : [
+      { x: .02, y: .58, angle: 20, delay: 760 },
+      { x: .98, y: .58, angle: 160, delay: 880 },
+      ...(rank === first + 2 ? [{ x: .5, y: .98, angle: 90, delay: 1000 }] : []),
+    ]
   return bursts.map(({ x, y, angle, delay }) => window.setTimeout(() => fire({
-    particleCount: count, angle, spread: 62, startVelocity: velocity,
+    particleCount: count, angle, spread: rank === first ? 80 : 62, startVelocity: velocity,
+    ticks: rank === first ? 120 : undefined,
+    scalar: rank === first ? 1.05 : undefined,
     origin: { x, y }, colors,
   }), delay))
 }
@@ -128,8 +152,8 @@ export function HybridMedalStage({ stage, step, reducedMotion }: StageProps) {
 
   if (!tier) return null
   return (
+    <>
     <StageFrame accentColor={tier.color} className="hybrid-medals">
-      <canvas ref={canvasRef} aria-hidden className="bot-stage__confetti pointer-events-none absolute inset-0 h-full w-full" />
       {step === 0 ? <PodiumTitle tier={tier} reducedMotion={reducedMotion} /> : <>
       <motion.div className="bot-stage__fly-in hybrid-medals__bot"
         initial={reducedMotion ? false : { x: '110vw', y: '18vh', rotate: 10, scale: .55, opacity: 0 }}
@@ -161,5 +185,7 @@ export function HybridMedalStage({ stage, step, reducedMotion }: StageProps) {
       </div>}
       </>}
     </StageFrame>
+    {createPortal(<canvas ref={canvasRef} aria-hidden className="pointer-events-none fixed inset-0 z-40 h-screen w-screen" />, document.body)}
+    </>
   )
 }
