@@ -1,6 +1,6 @@
 // Mirrors docs/SPEC.md exactly. Keep in sync with the server.
 
-export type DisplayStyle = 'scroll' | 'grid' | 'spotlight' | 'podium'
+export type DisplayStyle = 'scroll' | 'grid' | 'spotlight' | 'podium' | 'school'
 export type PodiumMode = 'hybrid' | 'podium' | 'bot'
 export type TierIcon = 'trophy' | 'medal' | 'star' | 'award' | 'crown' | 'rocket' | 'sparkles'
 export type Quality = 'high' | 'medium' | 'low'
@@ -45,6 +45,8 @@ export interface Tier {
   sortDirection: 'asc' | 'desc'
   /** Null uses balanced pages; an array sets ranks per page in reveal order. */
   gridPageCounts: number[] | null
+  schoolNames?: string[]
+  winnerSchool?: string
   order: number
   enabled: boolean
 }
@@ -81,7 +83,7 @@ export interface PublicStudent {
   photoUrl: string | null
 }
 
-export type PublicTier = Omit<Tier, 'order' | 'enabled'>
+export type PublicTier = Omit<Tier, 'order' | 'enabled' | 'winnerSchool'>
 
 export type StageType = 'intro' | 'tier' | 'finale'
 

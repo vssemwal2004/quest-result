@@ -15,5 +15,5 @@ export function sceneModeFor(stage: ShowStage | null | undefined): SceneMode {
   if (!stage) return 'boot'
   if (stage.type === 'intro') return 'intro'
   if (stage.type === 'finale') return 'finale'
-  return stage.tier?.style === 'podium' ? 'podium' : 'tier'
+  return stage.tier?.style === 'podium' || stage.tier?.style === 'school' ? 'podium' : 'tier'
 }

@@ -3,7 +3,7 @@ import { zodToHttpError } from './errors.js'
 
 export const MAX_RANK = 100_000
 export const MAX_SEARCH_LENGTH = 100
-export const DISPLAY_STYLES = ['scroll', 'grid', 'spotlight', 'podium']
+export const DISPLAY_STYLES = ['scroll', 'grid', 'spotlight', 'podium', 'school']
 export const TIER_ICONS = ['trophy', 'medal', 'star', 'award', 'crown', 'rocket', 'sparkles']
 
 const text = (min, max) => z.string().trim().min(min).max(max)
@@ -87,6 +87,8 @@ const tierObject = z.object({
   icon: z.enum(TIER_ICONS).default('award'),
   sortDirection: z.enum(['asc', 'desc']).default('asc'),
   gridPageCounts: z.array(z.number().int().min(1).max(25)).min(1).max(500).nullable().default(null),
+  schoolNames: z.array(text(1, 200)).max(20).default([]),
+  winnerSchool: z.string().trim().max(200).default(''),
   enabled: z.boolean().default(true),
 })
 const TIER_READ_ONLY = ['id', 'order']

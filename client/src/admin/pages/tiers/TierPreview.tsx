@@ -40,7 +40,7 @@ export function TierPreview({ name, subtitle, rankFrom, rankTo, prize, prizeAmou
           <Icon className="h-1/2 w-1/2" aria-hidden />
         </span>
         <p className="mt-2 font-tech text-[11px] font-bold uppercase tracking-[0.3em]" style={{ color }}>
-          Ranks {range}
+          {style === 'school' ? subtitle.trim() || name || 'Best School' : `Ranks ${range}`}
         </p>
         <p className="mt-1 max-w-full truncate font-display text-2xl font-black italic leading-tight text-white drop-shadow-[0_2px_0_rgba(2,10,36,.8)]">
           {name || 'Tier name'}

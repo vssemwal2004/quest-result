@@ -28,6 +28,8 @@ function Schematic({ style, color }: { style: DisplayStyle; color: string }) {
           </div>
         </div>
       )
+    case 'school':
+      return <div className="flex h-full items-center justify-center text-center text-sm font-bold" style={{ color }}>BEST SCHOOL</div>
     case 'podium':
       return (
         <div className="flex h-full items-end justify-center gap-1 px-3 pb-1.5">

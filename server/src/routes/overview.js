@@ -10,7 +10,7 @@ import { inTier, publicState, sortTiers } from '../show.js'
  * @param {{ tiers: any[], students: any[], state: any }} db snapshot (repo.loadSnapshot())
  */
 export function buildOverview(db, viewers) {
-  const enabled = db.tiers.filter((t) => t.enabled)
+  const enabled = db.tiers.filter((t) => t.enabled && t.style !== 'school')
   const ranks = new Set(db.students.map((s) => s.rank))
   const maxRank = enabled.length ? Math.max(...enabled.map((t) => t.rankTo)) : Math.max(0, ...ranks)
   const missingRanks = []
@@ -21,8 +21,8 @@ export function buildOverview(db, viewers) {
     tierCount: db.tiers.length,
     tiers: sortTiers(db.tiers).map((tier) => ({
       tier,
-      studentCount: db.students.filter((s) => inTier(tier, s.rank)).length,
-      expected: tier.rankTo - tier.rankFrom + 1,
+      studentCount: tier.style === 'school' ? tier.schoolNames?.length ?? 0 : db.students.filter((s) => inTier(tier, s.rank)).length,
+      expected: tier.style === 'school' ? tier.schoolNames?.length ?? 0 : tier.rankTo - tier.rankFrom + 1,
     })),
     unassignedStudents: db.students
       .filter((s) => !enabled.some((t) => inTier(t, s.rank)))

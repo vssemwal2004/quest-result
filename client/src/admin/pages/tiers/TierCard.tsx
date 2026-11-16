@@ -45,7 +45,7 @@ export function TierCard({
 }: TierCardProps) {
   const Icon = TIER_ICONS[tier.icon]
   const style = STYLE_META[tier.style]
-  const expected = tier.rankTo - tier.rankFrom + 1
+  const expected = tier.style === 'school' ? tier.schoolNames?.length ?? 0 : tier.rankTo - tier.rankFrom + 1
 
   return (
     <li
@@ -105,7 +105,7 @@ export function TierCard({
             <p className="truncate font-display text-base font-extrabold text-white">{tier.name}</p>
             <p className="truncate text-xs text-white/55">
               <span className="font-tech" style={{ color: tier.color }}>
-                {formatRange(tier.rankFrom, tier.rankTo)}
+                {tier.style === 'school' ? `${expected} schools` : formatRange(tier.rankFrom, tier.rankTo)}
               </span>
               {tier.podiumPrizes !== null && tier.style === 'podium' ? ' · Individual prizes' : (
                 <>{tier.prize && <> · {tier.prize}</>}{tier.prizeAmount && <span className="text-gold-300"> · {tier.prizeAmount}</span>}</>
@@ -125,9 +125,9 @@ export function TierCard({
             <Badge tone="neutral">{tier.gridPageCounts ? `${tier.gridPageCounts.length} manual pages` : 'Balanced pages'}</Badge>
           )}
           {tier.style === 'podium' && <Badge tone="neutral">{tier.podiumMode === 'hybrid' ? 'Hybrid' : tier.podiumMode === 'bot' ? 'Bot' : 'Podium'}</Badge>}
-          {tier.style !== 'podium' && <Badge tone="neutral">{tier.sortDirection === 'asc' ? 'Ascending' : 'Descending'}</Badge>}
+          {tier.style !== 'podium' && tier.style !== 'school' && <Badge tone="neutral">{tier.sortDirection === 'asc' ? 'Ascending' : 'Descending'}</Badge>}
           <Badge tone={studentCount === undefined ? 'neutral' : studentCount >= expected ? 'green' : studentCount === 0 ? 'amber' : 'blue'}>
-            {studentCount ?? '…'} / {expected} students
+            {tier.style === 'school' ? `${expected} candidates · winner set` : `${studentCount ?? '…'} / ${expected} students`}
           </Badge>
         </div>
 

@@ -51,9 +51,14 @@ export const STYLE_META: Record<DisplayStyle, StyleMeta> = {
     description: 'Each rank shuffles, then reveals. Choose Hybrid, 3D Podium, or Bot in the tier settings.',
     icon: Trophy,
   },
+  school: {
+    label: 'Best School',
+    description: 'Use the Top Three reveal scene: bot entrance, gold medal, school shuffle and champion reveal.',
+    icon: Award,
+  },
 }
 
-export const STYLE_OPTIONS: DisplayStyle[] = ['grid', 'spotlight', 'podium']
+export const STYLE_OPTIONS: DisplayStyle[] = ['grid', 'spotlight', 'podium', 'school']
 
 export const ACCENT_SWATCHES = [
   '#38bdf8',

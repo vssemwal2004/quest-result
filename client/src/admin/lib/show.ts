@@ -27,7 +27,7 @@ export function absoluteStep(stages: ShowStage[], { stageIndex, step }: Position
 }
 
 export function stageRange(stage: ShowStage): string | null {
-  return stage.tier ? formatRange(stage.tier.rankFrom, stage.tier.rankTo) : null
+  return stage.tier ? stage.tier.style === 'school' ? `${stage.tier.schoolNames?.length ?? 0} schools` : formatRange(stage.tier.rankFrom, stage.tier.rankTo) : null
 }
 
 export function studentLabel(s: PublicStudent): string {
@@ -56,6 +56,13 @@ export function describeStep(stage: ShowStage, step: number): StepDescription {
     return { headline: 'Finale', detail: 'Congratulations and thank-you screen.', student: null }
   }
   const tier = stage.tier
+  if (tier?.style === 'school') {
+    if (step === 0) return { headline: 'Best School title', detail: `${stage.title}: ${tier.schoolNames?.length ?? 0} schools are in the draw.`, student: null }
+    if (step === 1) return { headline: 'Bot greeting', detail: 'The bot flies in and waves, as in the Top Three reveal.', student: null }
+    if (step === 2) return { headline: 'Gold medal', detail: 'The gold medal appears. Next begins shuffling the school names.', student: null }
+    if (step === 3) return { headline: 'Schools shuffling', detail: 'Candidate schools cycle on the gold medal. Next reveals the selected winner.', student: null }
+    return { headline: 'Best School revealed', detail: `${stage.students[0]?.name ?? 'The selected school'} is revealed with the Top Three champion effects.`, student: stage.students[0] ?? null }
+  }
   const range = tier ? `ranks ${formatRange(tier.rankFrom, tier.rankTo)}` : 'this tier'
   if (step === 0) {
     const prize = tier?.prizeAmount || tier?.prize

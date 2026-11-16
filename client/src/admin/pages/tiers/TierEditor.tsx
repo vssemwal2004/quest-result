@@ -21,7 +21,7 @@ type Form = Omit<TierInput, 'rankFrom' | 'rankTo'> & { rankFrom: string; rankTo:
 function toForm(tier: Tier | null, others: Tier[]): Form {
   if (tier) {
     const { name, subtitle, prize, prizeAmount, podiumPrizes, podiumMode, style, color, icon, sortDirection, gridPageCounts, enabled } = tier
-    return { name, subtitle, prize, prizeAmount, podiumPrizes: style === 'podium' ? podiumPrizes ?? null : null, podiumMode: podiumMode ?? 'podium', style: style === 'scroll' ? 'grid' : style, color, icon, sortDirection, gridPageCounts: style === 'grid' || style === 'scroll' ? gridPageCounts : null, enabled, rankFrom: String(tier.rankFrom), rankTo: String(tier.rankTo) }
+    return { name, subtitle, prize, prizeAmount, podiumPrizes: style === 'podium' ? podiumPrizes ?? null : null, podiumMode: podiumMode ?? 'podium', style: style === 'scroll' ? 'grid' : style, color, icon, sortDirection, gridPageCounts: style === 'grid' || style === 'scroll' ? gridPageCounts : null, schoolNames: tier.schoolNames ?? [], winnerSchool: tier.winnerSchool ?? '', enabled, rankFrom: String(tier.rankFrom), rankTo: String(tier.rankTo) }
   }
   const usedColors = new Set(others.map((t) => t.color.toLowerCase()))
   return {
@@ -38,6 +38,8 @@ function toForm(tier: Tier | null, others: Tier[]): Form {
     icon: 'star',
     sortDirection: 'asc',
     gridPageCounts: null,
+    schoolNames: [],
+    winnerSchool: '',
     enabled: true,
   }
 }
@@ -64,6 +66,7 @@ interface TierEditorProps {
 export function TierEditor({ open, tier, allTiers, onClose, onSaved }: TierEditorProps) {
   const formId = useId()
   const [form, setForm] = useState<Form>(() => toForm(tier, allTiers))
+  const [schoolText, setSchoolText] = useState(() => (tier?.schoolNames ?? []).join('\n'))
   const [subtitleAuto, setSubtitleAuto] = useState(true)
   const [submitted, setSubmitted] = useState(false)
   const [serverRangeError, setServerRangeError] = useState<string | null>(null)
@@ -73,7 +76,8 @@ export function TierEditor({ open, tier, allTiers, onClose, onSaved }: TierEdito
   useEffect(() => {
     if (!open) return
     setForm(toForm(tier, allTiers))
-    setSubtitleAuto(!tier || tier.subtitle === rangeSubtitle(tier.rankFrom, tier.rankTo))
+    setSchoolText((tier?.schoolNames ?? []).join('\n'))
+    setSubtitleAuto(!tier || (tier.style !== 'school' && tier.subtitle === rangeSubtitle(tier.rankFrom, tier.rankTo)))
     setSubmitted(false)
     setServerRangeError(null)
     setFormError(null)
@@ -89,16 +93,18 @@ export function TierEditor({ open, tier, allTiers, onClose, onSaved }: TierEdito
   const from = toInt(form.rankFrom)
   const to = toInt(form.rankTo)
   const rangeValid = from !== null && to !== null && from >= 1 && to >= from
-  const suggestion = rangeValid ? rangeSubtitle(from, to) : ''
+  const suggestion = form.style === 'school' ? 'Best School' : rangeValid ? rangeSubtitle(from, to) : ''
   const podiumRanks = rangeValid && form.style === 'podium' && to - from < 4
     ? Array.from({ length: to - from + 1 }, (_, index) => from + index)
     : []
   const subtitle = subtitleAuto ? suggestion : form.subtitle
-  const conflicts = rangeValid && form.enabled ? overlappingTiers(allTiers, from, to, tier?.id) : []
+  const conflicts = rangeValid && form.enabled && form.style !== 'school' ? overlappingTiers(allTiers.filter((item) => item.style !== 'school'), from, to, tier?.id) : []
+  const schoolNames = form.schoolNames ?? []
+  const uniqueSchools = new Set(schoolNames.map((name) => name.toLocaleLowerCase()))
 
   const errors = {
     name: !form.name.trim() ? 'Give the tier a name.' : form.name.length > 80 ? 'Keep the name under 80 characters.' : null,
-    range:
+    range: form.style === 'school' ? null :
       from === null || from < 1
         ? 'Enter the first rank (1 or more).'
         : to === null
@@ -116,6 +122,9 @@ export function TierEditor({ open, tier, allTiers, onClose, onSaved }: TierEdito
       form.gridPageCounts.some((count) => !Number.isInteger(count) || count < 1 || count > 25) ||
       form.gridPageCounts.reduce((sum, count) => sum + count, 0) !== to! - from! + 1
     ) ? 'Manual pages must cover every rank, with 1–25 ranks on each page.' : null,
+    schools: form.style === 'school' && (schoolNames.length < 10 || schoolNames.length > 20 || uniqueSchools.size !== schoolNames.length)
+      ? 'Enter 10–20 unique school names, one per line.' : null,
+    winner: form.style === 'school' && !schoolNames.includes(form.winnerSchool ?? '') ? 'Select the winning school.' : null,
   }
   const hasErrors = Object.values(errors).some(Boolean)
   const show = (msg: string | null) => (submitted ? msg : null)
@@ -127,7 +136,7 @@ export function TierEditor({ open, tier, allTiers, onClose, onSaved }: TierEdito
     const podiumPrizes = form.style === 'podium' && form.podiumPrizes !== null
       ? podiumRanks.map((rank) => form.podiumPrizes?.find((entry) => entry.rank === rank) ?? { rank, prize: '', prizeAmount: '' })
       : null
-    const input: TierInput = { ...form, name: form.name.trim(), subtitle: subtitle.trim(), rankFrom: from, rankTo: to, podiumPrizes }
+    const input: TierInput = { ...form, name: form.name.trim(), subtitle: subtitle.trim(), rankFrom: form.style === 'school' ? 1 : from, rankTo: form.style === 'school' ? 1 : to, podiumPrizes }
     setBusy(true)
     setFormError(null)
     try {
@@ -195,7 +204,7 @@ export function TierEditor({ open, tier, allTiers, onClose, onSaved }: TierEdito
           <Field label="Tier name" required error={show(errors.name)}>
             {(p) => <input {...p} className="input" value={form.name} onChange={(e) => set('name', e.target.value)} placeholder="e.g. Top 20 Stars" maxLength={80} />}
           </Field>
-          <div>
+          {form.style !== 'school' && <div>
             <div className="grid grid-cols-2 gap-3">
               <Field label="Rank from" required>
                 {(p) => (
@@ -231,8 +240,8 @@ export function TierEditor({ open, tier, allTiers, onClose, onSaved }: TierEdito
             ) : (
               rangeValid && <p className="mt-2 text-xs text-white/50">{to - from + 1} rank{to === from ? '' : 's'} in this tier.</p>
             )}
-          </div>
-          <Field label="Subtitle" hint={subtitleAuto ? 'Generated from the range. Type to customise.' : 'Shown under the tier name. May be empty.'}>
+          </div>}
+          <Field label={form.style === 'school' ? 'Text on the medal' : 'Subtitle'} hint={form.style === 'school' ? 'This replaces “Best School” above the medal. Type any title you want.' : subtitleAuto ? 'Generated from the range. Type to customise.' : 'Shown under the tier name. May be empty.'}>
             {(p) => (
               <div className="flex gap-2">
                 <input
@@ -246,7 +255,7 @@ export function TierEditor({ open, tier, allTiers, onClose, onSaved }: TierEdito
                   placeholder={suggestion || 'Ranks X – Y'}
                   maxLength={120}
                 />
-                <button
+                {form.style !== 'school' && <button
                   type="button"
                   className={clsx('btn-ghost shrink-0 px-3 text-xs', subtitleAuto && 'border-cyan-glow/50 text-cyan-glow')}
                   onClick={() => setSubtitleAuto(true)}
@@ -254,11 +263,23 @@ export function TierEditor({ open, tier, allTiers, onClose, onSaved }: TierEdito
                   title="Use the suggested subtitle"
                 >
                   <WandSparkles className="h-3.5 w-3.5" aria-hidden /> Auto
-                </button>
+                </button>}
               </div>
             )}
           </Field>
         </Section>
+
+        {form.style === 'school' && <Section title="Best School candidates">
+          <Field label="School names" required hint="Enter 10–20 unique names, one per line." error={show(errors.schools)}>
+            {(p) => <textarea {...p} className="input min-h-48" value={schoolText} onChange={(e) => { setSchoolText(e.target.value); set('schoolNames', e.target.value.split(/\r?\n/).map((name) => name.trim()).filter(Boolean)) }} placeholder="School One\nSchool Two\n…" />}
+          </Field>
+          <Field label="Winning school" required error={show(errors.winner)}>
+            {(p) => <select {...p} className="input" value={form.winnerSchool ?? ''} onChange={(e) => set('winnerSchool', e.target.value)}>
+              <option value="">Select the school to reveal</option>
+              {schoolNames.map((school, index) => <option key={`${school}-${index}`} value={school}>{school}</option>)}
+            </select>}
+          </Field>
+        </Section>}
 
         <Section title="Prize">
           <Field label={isPodium ? 'Shared prize' : 'Prize'} hint={isPodium ? 'Used for all podium places when individual prizes are off.' : 'e.g. Certificate of Merit + Goodies'}>
@@ -302,7 +323,7 @@ export function TierEditor({ open, tier, allTiers, onClose, onSaved }: TierEdito
 
         <Section title="Display style">
           <StylePicker value={form.style} onChange={(style) => {
-            setForm((current) => ({ ...current, style, gridPageCounts: style === 'grid' ? current.gridPageCounts : null, podiumPrizes: style === 'podium' ? current.podiumPrizes : null }))
+            setForm((current) => ({ ...current, style, rankFrom: style === 'school' ? '1' : current.rankFrom, rankTo: style === 'school' ? '1' : current.rankTo, gridPageCounts: style === 'grid' ? current.gridPageCounts : null, podiumPrizes: style === 'podium' ? current.podiumPrizes : null }))
             setServerRangeError(null)
           }} color={accent} />
           {isPodium && (
@@ -327,7 +348,7 @@ export function TierEditor({ open, tier, allTiers, onClose, onSaved }: TierEdito
               </p>
             </div>
           )}
-          <div>
+          {form.style !== 'school' && <div>
             <p className="label">Reveal order inside tier</p>
             <Segmented
               ariaLabel="Reveal order inside tier"
@@ -344,7 +365,7 @@ export function TierEditor({ open, tier, allTiers, onClose, onSaved }: TierEdito
                 ? `Each rank gets a suspense step and a reveal step, from ${to ?? 'last'} → ${from ?? 'first'}, followed by a group view.`
                 : 'The order ranks appear in the list. Grid pages reveal everyone together; Spotlight reveals one at a time.'}
             </p>
-          </div>
+          </div>}
           {form.style === 'grid' && (
             <GridPageEditor
               rankFrom={from}

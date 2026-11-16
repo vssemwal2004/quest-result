@@ -63,6 +63,26 @@ function makeDb(overrides = {}) {
 
 const ranksOf = (stage) => stage.students.map((s) => s.rank)
 
+describe('Best School stage', () => {
+  it('shuffles candidates, reveals only the selected school, and keeps the winner private until reveal', () => {
+    const schoolNames = Array.from({ length: 12 }, (_, i) => `School ${i + 1}`)
+    const db = makeDb({
+      tiers: [tier('best-school', 1, 1, 'school', 0, { subtitle: 'Best Team', schoolNames, winnerSchool: 'School 7' })],
+    })
+    const stages = buildStages(db)
+    const school = stages[1]
+    assert.equal(school.stepCount, 5)
+    assert.deepEqual(school.tier.schoolNames, schoolNames)
+    assert.equal(school.tier.subtitle, 'Best Team')
+    assert.equal('winnerSchool' in school.tier, false)
+    assert.equal(school.students[0].name, 'School 7')
+    for (const step of [0, 1, 2, 3]) {
+      assert.deepEqual(filterForPublic(stages, { stageIndex: 1, step }, db.settings)[1].students, [])
+    }
+    assert.equal(filterForPublic(stages, { stageIndex: 1, step: 4 }, db.settings)[1].students[0].name, 'School 7')
+  })
+})
+
 describe('buildStages', () => {
   const stages = buildStages(makeDb())
 

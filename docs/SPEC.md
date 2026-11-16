@@ -37,7 +37,7 @@ Fonts (self-hosted via @fontsource, works offline at the venue): `font-display` 
 ## Data model (mirrored exactly in `client/src/types.ts`)
 
 ```ts
-type DisplayStyle = 'grid' | 'spotlight' | 'podium' // stored legacy `scroll` tiers render as grid
+type DisplayStyle = 'grid' | 'spotlight' | 'podium' | 'school' // stored legacy `scroll` tiers render as grid
 type TierIcon = 'trophy' | 'medal' | 'star' | 'award' | 'crown' | 'rocket' | 'sparkles'
 
 interface Student {
@@ -66,6 +66,8 @@ interface Tier {
   icon: TierIcon
   sortDirection: 'asc' | 'desc' // display/reveal order inside the tier (ignored for podium)
   gridPageCounts: number[] | null // null = balanced automatically; otherwise rank counts per page in reveal order
+  schoolNames?: string[] // 10–20 unique candidates for Best School tiers
+  winnerSchool?: string // selected winner; excluded from public tier payload
   order: number         // reveal order of tiers (ascending = earlier in show)
   enabled: boolean
 }
@@ -94,6 +96,7 @@ interface Settings {
 Validation (server, zod): enabled tiers must not overlap in rank ranges (409 `TIER_OVERLAP`);
 podium tiers must span ≤ 4 ranks (400). Each podium rank has an anonymous suspense step followed by a reveal step; the final step shows all winners together. Manual grid counts must total the tier's rank span and each page
 must contain 1–25 ranks. Student ranks unique (409 `RANK_TAKEN`).
+Best School tiers use 10–20 unique school names and a winner chosen from that list. They are independent of student rank coverage. The tier subtitle is editable text shown on the medal label.
 
 ## Show model — server is the single source of truth
 
@@ -108,6 +111,7 @@ Step counts per stage:
 | tier `grid` | 1 + 2p when n > 0; otherwise 1 | 0 = tier title card; odd steps show every fixed card on the page cycling fictional decoy names; the next even step reveals every student on that page together. Pages hold up to 25 students, balanced automatically or grouped by manual rank counts. |
 | tier `spotlight` | 1 + n | 0 = title card, k (1..n) = first k students revealed one-by-one |
 | tier `podium` | Podium/Bot: 1 + 2n + 1 when n > 1; Hybrid: 3 + 2n when n > 0 (n ≤ 4) | Podium/Bot retain their suspense, reveal and final group steps. Hybrid uses 0 = title, 1 = silent bot entrance and wave, 2 = medal positions, then each rank has a shuffle and reveal step in descending order. Revealed Hybrid winners remain visible. |
+| tier `school` | 5 | Uses the Top Three Hybrid scene: 0 = title; 1 = bot entrance and wave; 2 = gold medal; 3 = candidate school names shuffle on the medal; 4 = the selected school is revealed with champion effects. The winner name is withheld from the public student payload until step 4. |
 | finale | 1 | 0 = congratulations / thank you |
 
 (n = number of students whose rank is inside the tier range; p = number of nonempty grid pages.)

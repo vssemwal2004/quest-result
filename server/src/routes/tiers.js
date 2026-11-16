@@ -9,6 +9,16 @@ const rangeLabel = (t) => (t.rankFrom === t.rankTo ? `${t.rankFrom}` : `${t.rank
 
 /** Enforce the tier invariants against the other tiers. Throws 400 / 409. */
 export function assertValidTier(tier, otherTiers) {
+  if (tier.style === 'school') {
+    const names = tier.schoolNames ?? []
+    const unique = new Set(names.map((name) => name.trim().toLocaleLowerCase()))
+    if (names.length < 10 || names.length > 20 || unique.size !== names.length || !names.includes(tier.winnerSchool)) {
+      throw new HttpError(400, 'VALIDATION', 'Best School tiers need 10–20 unique school names and a winner selected from that list', [
+        { path: 'schoolNames', message: 'Enter 10–20 unique names and select one as the winner' },
+      ])
+    }
+    return
+  }
   if (tier.rankFrom > tier.rankTo) {
     throw new HttpError(400, 'VALIDATION', 'rankTo: "Rank to" must be greater than or equal to "Rank from"', [
       { path: 'rankTo', message: 'Must be ≥ rankFrom' },
@@ -39,7 +49,7 @@ export function assertValidTier(tier, otherTiers) {
     }
   }
   if (!tier.enabled) return
-  const clash = otherTiers.find((o) => o.enabled && o.rankFrom <= tier.rankTo && tier.rankFrom <= o.rankTo)
+  const clash = otherTiers.find((o) => o.enabled && o.style !== 'school' && o.rankFrom <= tier.rankTo && tier.rankFrom <= o.rankTo)
   if (clash) {
     throw new HttpError(
       409,

@@ -36,7 +36,7 @@ export function toPublicStudent(s) {
 }
 
 export function toPublicTier(t) {
-  const { order: _order, enabled: _enabled, ...rest } = t
+  const { order: _order, enabled: _enabled, winnerSchool: _winnerSchool, ...rest } = t
   return { ...rest, podiumPrizes: rest.podiumPrizes ?? null, podiumMode: rest.podiumMode ?? 'podium', style: rest.style === 'scroll' ? 'grid' : rest.style }
 }
 
@@ -70,6 +70,15 @@ export function buildStages(db) {
     { index: 0, type: 'intro', key: 'intro', title: 'Welcome', stepCount: 1, tier: null, studentCount: 0, students: [] },
   ]
   for (const tier of enabledTiers(db.tiers)) {
+    if (tier.style === 'school') {
+      const winner = { id: `school:${tier.id}`, rank: 1, name: tier.winnerSchool, school: '', city: null, score: null, photoUrl: null }
+      stages.push({
+        index: stages.length, type: 'tier', key: `tier:${tier.id}`, title: tier.name,
+        stepCount: 5, tier: toPublicTier(tier), studentCount: 1,
+        revealRanks: [1], students: [winner],
+      })
+      continue
+    }
     const students = tierStudents(tier, db.students).map(toPublicStudent)
     const pageEnds = LIST_STYLES.has(tier.style)
       ? tier.gridPageCounts?.length ? manualGridPageEnds(tier, students) : gridPageEnds(students.length)
@@ -150,7 +159,8 @@ export function filterForPublic(stages, state, settings) {
       tier: stage.tier.podiumPrizes ? { ...stage.tier, podiumPrizes: [] } : stage.tier,
     }
     const revealedPages = Math.floor(state.step / 2)
-    const visibleCount = LIST_STYLES.has(stage.tier.style)
+    const visibleCount = stage.tier.style === 'school' ? (state.step >= 4 ? 1 : 0)
+      : LIST_STYLES.has(stage.tier.style)
       ? revealedPages > 0 ? stage.pageEnds?.[revealedPages - 1] ?? 0 : 0
       : stage.tier.style === 'podium'
         ? stage.tier.podiumMode === 'hybrid' ? Math.max(0, Math.floor((state.step - 2) / 2)) : Math.floor(state.step / 2)

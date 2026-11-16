@@ -75,6 +75,8 @@ export function toTier(doc) {
     icon: d.icon,
     sortDirection: d.sortDirection,
     gridPageCounts: d.gridPageCounts ?? null,
+    schoolNames: d.schoolNames ?? [],
+    winnerSchool: d.winnerSchool ?? '',
     order: d.order,
     enabled: d.enabled,
   }

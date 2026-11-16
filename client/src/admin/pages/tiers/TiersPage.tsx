@@ -47,7 +47,7 @@ export function TiersPage() {
 
   const maxRank = useMemo(() => {
     const ranks = [
-      ...list.filter((t) => t.enabled).map((t) => t.rankTo),
+      ...list.filter((t) => t.enabled && t.style !== 'school').map((t) => t.rankTo),
       ...(overview.data?.unassignedStudents.map((s) => s.rank) ?? []),
       ...(overview.data?.missingRanks ?? []),
     ]
@@ -231,8 +231,7 @@ export function TiersPage() {
         message={
           deleting && (
             <>
-              <strong className="text-white">{deleting.name}</strong> (ranks {deleting.rankFrom}–{deleting.rankTo}) will be removed from the
-              show. Students in that range stay in Results but will not be revealed until another tier covers them.
+              <strong className="text-white">{deleting.name}</strong> {deleting.style === 'school' ? 'and its school reveal will be removed from the show.' : `(ranks ${deleting.rankFrom}–${deleting.rankTo}) will be removed from the show. Students in that range stay in Results but will not be revealed until another tier covers them.`}
             </>
           )
         }

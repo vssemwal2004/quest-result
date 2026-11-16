@@ -13,7 +13,7 @@ interface Segment {
 
 /** Run-length segments of ranks 1..maxRank by the set of enabled tiers covering each rank. */
 function buildSegments(tiers: Tier[], maxRank: number): Segment[] {
-  const enabled = tiers.filter((t) => t.enabled)
+  const enabled = tiers.filter((t) => t.enabled && t.style !== 'school')
   const segments: Segment[] = []
   for (let r = 1; r <= maxRank; r++) {
     const covering = enabled.filter((t) => r >= t.rankFrom && r <= t.rankTo)

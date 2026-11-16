@@ -24,6 +24,8 @@ const tierSchema = new mongoose.Schema(
     icon: { type: String, default: 'award', enum: TIER_ICONS },
     sortDirection: { type: String, default: 'asc', enum: ['asc', 'desc'] },
     gridPageCounts: { type: [Number], default: null },
+    schoolNames: { type: [String], default: [] },
+    winnerSchool: { type: String, default: '', trim: true, maxlength: 200 },
     order: { type: Number, required: true, min: 0, validate: integer },
     enabled: { type: Boolean, default: true },
   },

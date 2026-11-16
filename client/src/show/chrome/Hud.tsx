@@ -10,7 +10,7 @@ import { toggleFullscreen } from '../useShowHotkeys'
 import type { ShowMode } from '../useShow'
 
 function segmentLabel(stage: ShowStage): { primary: string; secondary: string } {
-  if (stage.tier) return { primary: formatRange(stage.tier.rankFrom, stage.tier.rankTo), secondary: stage.tier.name }
+  if (stage.tier) return { primary: stage.tier.style === 'school' ? stage.tier.subtitle?.trim() || stage.tier.name : formatRange(stage.tier.rankFrom, stage.tier.rankTo), secondary: stage.tier.name }
   return { primary: stage.type === 'finale' ? 'Finale' : 'Welcome', secondary: '' }
 }
 

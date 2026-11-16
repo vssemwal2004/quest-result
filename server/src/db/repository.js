@@ -50,7 +50,7 @@ import {
 
 export const MAX_SEARCH_LENGTH = 100
 const STUDENT_FIELDS = ['rank', 'name', 'school', 'city', 'score']
-const TIER_FIELDS = ['name', 'subtitle', 'rankFrom', 'rankTo', 'prize', 'prizeAmount', 'podiumPrizes', 'podiumMode', 'style', 'color', 'icon', 'sortDirection', 'gridPageCounts', 'enabled']
+const TIER_FIELDS = ['name', 'subtitle', 'rankFrom', 'rankTo', 'prize', 'prizeAmount', 'podiumPrizes', 'podiumMode', 'style', 'color', 'icon', 'sortDirection', 'gridPageCounts', 'schoolNames', 'winnerSchool', 'enabled']
 const SETTINGS_FIELDS = SETTINGS_KEYS.filter((k) => k !== 'logoUrl' && k !== 'updatedAt')
 
 export const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')

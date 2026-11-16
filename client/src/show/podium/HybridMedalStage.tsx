@@ -72,6 +72,7 @@ function MedalPosition({ rank, first, student, active, shuffling, celebrating, r
   const place = rank === first ? 'gold' : rank === first + 1 ? 'silver' : rank === first + 2 ? 'bronze' : 'fourth'
   const prize = student ? prizeFor(tier, rank) : ''
   const sparkCount = place === 'gold' ? 14 : place === 'silver' ? 10 : 7
+  const schoolLabel = tier.subtitle?.trim() || tier.name
   return (
     <motion.div className={`hybrid-medal hybrid-medal--${place} ${active ? 'hybrid-medal--active' : ''} ${student ? 'hybrid-medal--revealed' : ''} ${celebrating ? 'hybrid-medal--celebrating' : ''}`}
       initial={reducedMotion ? false : { opacity: 0, scale: .7, y: 30 }}
@@ -80,16 +81,16 @@ function MedalPosition({ rank, first, student, active, shuffling, celebrating, r
       <div className="hybrid-medal__caption">
         {student || shuffling ? (
           <div className="hybrid-medal__card">
-            <span className="hybrid-medal__label">{rank === first ? <Crown /> : <Medal />} {labelFor(rank, first)}</span>
+            <span className="hybrid-medal__label">{rank === first ? <Crown /> : <Medal />} {tier.style === 'school' ? schoolLabel : labelFor(rank, first)}</span>
             <strong className="hybrid-medal__name">
-              {student ? <ShuffleName name={student.name} duration={800} reducedMotion={reducedMotion} /> : <DecoyName reducedMotion={reducedMotion} />}
+              {student ? <ShuffleName name={student.name} duration={800} reducedMotion={reducedMotion} /> : <DecoyName reducedMotion={reducedMotion} names={tier.style === 'school' ? tier.schoolNames : undefined} />}
             </strong>
             {student && <>
-              <span className="hybrid-medal__school">{[student.school, student.city].filter(Boolean).join(' · ')}</span>
+              {tier.style !== 'school' && <span className="hybrid-medal__school">{[student.school, student.city].filter(Boolean).join(' · ')}</span>}
               {prize && <span className="hybrid-medal__prize">{prize}</span>}
             </>}
           </div>
-        ) : <div className="hybrid-medal__placeholder">{labelFor(rank, first)}</div>}
+        ) : <div className="hybrid-medal__placeholder">{tier.style === 'school' ? schoolLabel : labelFor(rank, first)}</div>}
       </div>
       <div className="hybrid-medal__laurel" aria-hidden>
         {place === 'gold' && <svg className="hybrid-medal__crown" viewBox="0 0 100 58" fill="none">
@@ -98,7 +99,7 @@ function MedalPosition({ rank, first, student, active, shuffling, celebrating, r
           <circle cx="4" cy="9" r="4" fill="#fff6c5" /><circle cx="50" cy="4" r="4" fill="#fff6c5" /><circle cx="96" cy="9" r="4" fill="#fff6c5" />
         </svg>}
         <img className="hybrid-medal__wreath" src="/medal-laurel.png" alt="" />
-        <strong>#{rank}</strong>
+        <strong>{tier.style === 'school' ? '★' : `#${rank}`}</strong>
         {celebrating && <span className="hybrid-medal__sparks" aria-hidden>
           {Array.from({ length: sparkCount }, (_, index) => <i key={index} style={{ '--spark-angle': `${index * 360 / sparkCount}deg`, '--spark-delay': `${index % 3 * .1}s` } as CSSProperties} />)}
         </span>}
@@ -168,13 +169,13 @@ export function HybridMedalStage({ stage, step, reducedMotion }: StageProps) {
                 initial={reducedMotion ? false : { opacity: 0, scale: .88 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
                 transition={{ duration: reducedMotion ? .1 : .4 }}>
                 {step < 3 ? <div className="bot-stage__expression"><span className="bot-stage__eyes"><i /><i /></span><span className="bot-stage__smile" /></div>
-                  : <div className="bot-stage__pending"><strong>#{activeRank}</strong></div>}
+                  : <div className="bot-stage__pending"><strong>{tier.style === 'school' ? '★' : `#${activeRank}`}</strong></div>}
               </motion.div>
             </AnimatePresence>
           </div>
         </div>
       </motion.div>
-      {step >= 2 && <div className={`hybrid-medals__positions ${ranks.length === 4 ? 'hybrid-medals__positions--four' : ''} ${focusedRank != null ? `hybrid-medals__positions--zoom-${focusedPlace}` : ''}`}>
+      {step >= 2 && <div className={`hybrid-medals__positions ${ranks.length === 4 ? 'hybrid-medals__positions--four' : ''} ${tier.style === 'school' ? 'hybrid-medals__positions--school' : ''} ${focusedRank != null ? `hybrid-medals__positions--zoom-${focusedPlace}` : ''}`}>
         {activeIndex >= 0 && <div key={spotlightPlace} className={`hybrid-medals__spotlight hybrid-medals__spotlight--${spotlightPlace}`} aria-hidden />}
         {ranks.map((rank, index) => {
           const student = step >= 4 + index * 2 ? stage.students.find((person) => person.rank === rank) : undefined

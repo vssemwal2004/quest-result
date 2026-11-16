@@ -8,6 +8,7 @@ import { ShowErrorBoundary } from './ShowErrorBoundary'
 
 // Load the Champions presenters on demand; prefetch after the intro so both renderers are ready.
 const PodiumStage = lazy(() => import('@/show/podium/PodiumStage').then((m) => ({ default: m.PodiumStage })))
+const HybridMedalStage = lazy(() => import('@/show/podium/HybridMedalStage').then((m) => ({ default: m.HybridMedalStage })))
 export const prefetchPodium = () => void import('@/show/podium/PodiumStage').catch(() => undefined)
 
 // Zoom-through: the old stage rushes past the camera, the new one settles in from depth.
@@ -34,6 +35,7 @@ function StageContent({ canControl, revealing, onReveal, ...props }: StageViewPr
   const { stage } = props
   if (stage.type === 'intro') return <IntroStage {...props} canControl={canControl} revealing={revealing} onReveal={onReveal} />
   if (stage.type === 'finale') return <FinaleStage {...props} />
+  if (stage.tier?.style === 'school') return <Suspense fallback={null}><HybridMedalStage {...props} /></Suspense>
   if (stage.tier?.style === 'podium')
     return (
       <Suspense fallback={null}>

@@ -8,7 +8,7 @@ import { accent, u } from '@/show/stages/units'
 import type { PublicTier } from '@/types'
 
 function rangeLabel(tier: PublicTier): string {
-  return `${tier.rankFrom === tier.rankTo ? 'Rank' : 'Ranks'} ${formatRange(tier.rankFrom, tier.rankTo)}`
+  return tier.style === 'school' ? tier.subtitle?.trim() || tier.name : `${tier.rankFrom === tier.rankTo ? 'Rank' : 'Ranks'} ${formatRange(tier.rankFrom, tier.rankTo)}`
 }
 
 /** Step 0 headline above the empty podium: range, tier name in 3D gold, prize banner. */
