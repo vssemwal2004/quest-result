@@ -6,7 +6,7 @@ import { api } from '@/lib/api'
 import type { Tier } from '@/types'
 import { formatRange } from '@/show/contracts'
 import { useResource } from '../../hooks/useResource'
-import { STYLE_META } from '../../lib/tierMeta'
+import { getStyleMeta } from '../../lib/tierMeta'
 import { Modal } from '../../ui/Modal'
 import { ConfirmDialog } from '../../ui/ConfirmDialog'
 import { ErrorState } from '../../ui/EmptyState'
@@ -81,7 +81,7 @@ export function PresetsModal({ open, currentCount, onClose, onApplied }: Presets
                         <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: t.color, boxShadow: `0 0 8px ${t.color}` }} aria-hidden />
                         <span className="min-w-0 flex-1 truncate text-white/85">{t.name}</span>
                         <span className="font-tech text-white/50">{formatRange(t.rankFrom, t.rankTo)}</span>
-                        <span className="w-20 shrink-0 whitespace-nowrap text-right text-white/40">{STYLE_META[t.style].label}</span>
+                        <span className="w-20 shrink-0 whitespace-nowrap text-right text-white/40">{getStyleMeta(t.style).label}</span>
                       </li>
                     ))}
                   </ol>

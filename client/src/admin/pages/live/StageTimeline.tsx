@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 import { Check, ExternalLink, Locate } from 'lucide-react'
 import clsx from 'clsx'
 import type { ShowStage, ShowState } from '@/types'
-import { STYLE_META, withAlpha } from '../../lib/tierMeta'
+import { getStyleMeta, withAlpha } from '../../lib/tierMeta'
 import { stageRange } from '../../lib/show'
 import { previewHref, stageColor, stageIcon } from './stageIcon'
 
@@ -107,7 +107,7 @@ export function StageTimeline({ stages, state, onJump }: StageTimelineProps) {
                       <span className="font-tech" style={{ color }}>
                         {range}
                       </span>
-                      {stage.tier && ` · ${STYLE_META[stage.tier.style].label}`} · {stage.studentCount} student{stage.studentCount === 1 ? '' : 's'}
+                      {stage.tier && ` · ${getStyleMeta(stage.tier.style).label}`} · {stage.studentCount} student{stage.studentCount === 1 ? '' : 's'}
                     </>
                   ) : stage.type === 'intro' ? (
                     'Welcome & Reveal button'

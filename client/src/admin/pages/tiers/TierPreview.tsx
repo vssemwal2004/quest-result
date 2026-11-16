@@ -1,6 +1,6 @@
 import type { DisplayStyle, TierIcon } from '@/types'
 import { formatRange } from '@/show/contracts'
-import { STYLE_META, TIER_ICONS, withAlpha } from '../../lib/tierMeta'
+import { getStyleMeta, TIER_ICONS, withAlpha } from '../../lib/tierMeta'
 
 interface TierPreviewProps {
   name: string
@@ -54,7 +54,7 @@ export function TierPreview({ name, subtitle, rankFrom, rankTo, prize, prizeAmou
         )}
       </div>
       <span className="absolute bottom-2 right-2 rounded-md bg-navy-950/70 px-1.5 py-0.5 text-[10px] font-semibold text-white/60">
-        {STYLE_META[style].label}
+        {getStyleMeta(style).label}
       </span>
     </div>
   )

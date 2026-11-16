@@ -21,7 +21,7 @@ import { useShowUpdate } from '../hooks/useShowUpdate'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import { useLive } from '../state/LiveContext'
 import { compressRanges, targetWinners } from '../lib/ranks'
-import { STYLE_META, TIER_ICONS, withAlpha } from '../lib/tierMeta'
+import { getStyleMeta, TIER_ICONS, withAlpha } from '../lib/tierMeta'
 import { PageHeader, Panel } from '../ui/Panel'
 import { StatCard } from '../ui/StatCard'
 import { Badge } from '../ui/Badge'
@@ -45,7 +45,7 @@ function TierCoverageRow({ item }: { item: OverviewTier }) {
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
           <span className="truncate font-semibold text-white">{tier.name}</span>
           <span className="font-tech text-xs text-white/50">{formatRange(tier.rankFrom, tier.rankTo)}</span>
-          <Badge className="hidden sm:inline-flex">{STYLE_META[tier.style].label}</Badge>
+          <Badge className="hidden sm:inline-flex">{getStyleMeta(tier.style).label}</Badge>
           {!tier.enabled && <Badge tone="amber">Disabled</Badge>}
         </div>
         <div

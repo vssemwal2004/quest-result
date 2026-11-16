@@ -10,7 +10,7 @@ import { useDocumentTitle } from '../../hooks/useDocumentTitle'
 import { useLive } from '../../state/LiveContext'
 import { errorMessage } from '../../lib/errors'
 import { absoluteStep, describeNext, describeStep, nextPosition, stageRange, totalSteps } from '../../lib/show'
-import { STYLE_META, withAlpha } from '../../lib/tierMeta'
+import { getStyleMeta, withAlpha } from '../../lib/tierMeta'
 import { PageHeader, Panel } from '../../ui/Panel'
 import { ConfirmDialog } from '../../ui/ConfirmDialog'
 import { ErrorState } from '../../ui/EmptyState'
@@ -85,7 +85,7 @@ function NowCard({ stage, state, stages }: { stage: ShowStage; state: ShowState;
                     {range}
                   </span>
                 )}
-                {stage.tier && <span>{STYLE_META[stage.tier.style].label}</span>}
+                {stage.tier && <span>{getStyleMeta(stage.tier.style).label}</span>}
                 {stage.type === 'tier' && <span>· {stage.studentCount} students</span>}
               </p>
             </div>

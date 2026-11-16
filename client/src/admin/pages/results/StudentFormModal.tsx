@@ -7,7 +7,7 @@ import { StudentAvatar } from '@/components/StudentAvatar'
 import { useObjectUrl } from '../../hooks/useObjectUrl'
 import { errorMessage, isApiError } from '../../lib/errors'
 import { tierForRank } from '../../lib/ranks'
-import { STYLE_META } from '../../lib/tierMeta'
+import { getStyleMeta } from '../../lib/tierMeta'
 import { Modal } from '../../ui/Modal'
 import { Field } from '../../ui/Field'
 import { FileDrop } from '../../ui/FileDrop'
@@ -196,7 +196,7 @@ export function StudentFormModal({ open, student, tiers, suggestedRank, onClose,
                 rankTier ? (
                   <span>
                     Falls in <span style={{ color: rankTier.color }} className="font-semibold">{rankTier.name}</span> ·{' '}
-                    {STYLE_META[rankTier.style].label}
+                    {getStyleMeta(rankTier.style).label}
                   </span>
                 ) : (
                   <span className="inline-flex items-center gap-1 text-amber-200">

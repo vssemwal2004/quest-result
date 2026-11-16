@@ -3,7 +3,7 @@ import { ChevronDown, ChevronUp, GripVertical, Pencil, Trash2 } from 'lucide-rea
 import clsx from 'clsx'
 import type { Tier } from '@/types'
 import { formatRange } from '@/show/contracts'
-import { STYLE_META, TIER_ICONS, withAlpha } from '../../lib/tierMeta'
+import { getStyleMeta, TIER_ICONS, withAlpha } from '../../lib/tierMeta'
 import { Badge } from '../../ui/Badge'
 import { Toggle } from '../../ui/Toggle'
 
@@ -44,7 +44,7 @@ export function TierCard({
   onDelete,
 }: TierCardProps) {
   const Icon = TIER_ICONS[tier.icon]
-  const style = STYLE_META[tier.style]
+  const style = getStyleMeta(tier.style)
   const expected = tier.style === 'school' ? tier.schoolNames?.length ?? 0 : tier.rankTo - tier.rankFrom + 1
 
   return (

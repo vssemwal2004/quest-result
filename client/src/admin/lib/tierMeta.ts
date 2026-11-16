@@ -58,6 +58,18 @@ export const STYLE_META: Record<DisplayStyle, StyleMeta> = {
   },
 }
 
+/** API data can contain a style unknown to this frontend during a rolling deploy. */
+export function getStyleMeta(style: string | null | undefined): StyleMeta {
+  if (style && Object.prototype.hasOwnProperty.call(STYLE_META, style)) {
+    return STYLE_META[style as DisplayStyle]
+  }
+  return {
+    label: style || 'Unknown style',
+    description: 'This display style is not supported by this version of the app.',
+    icon: LayoutGrid,
+  }
+}
+
 export const STYLE_OPTIONS: DisplayStyle[] = ['grid', 'spotlight', 'podium', 'school']
 
 export const ACCENT_SWATCHES = [
