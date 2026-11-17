@@ -72,6 +72,7 @@ const tierRank = z.preprocess(toNumber, z.number().int().min(1).max(MAX_RANK))
 const tierObject = z.object({
   name: text(1, 80),
   subtitle: z.string().trim().max(120).default(''),
+  medalHeading: z.string().trim().max(120).default(''),
   rankFrom: tierRank,
   rankTo: tierRank,
   prize: z.string().trim().max(200).default(''),

@@ -64,6 +64,7 @@ export function toTier(doc) {
     id: String(d._id),
     name: d.name,
     subtitle: d.subtitle ?? '',
+    medalHeading: d.medalHeading ?? '',
     rankFrom: d.rankFrom,
     rankTo: d.rankTo,
     prize: d.prize ?? '',

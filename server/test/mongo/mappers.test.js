@@ -15,7 +15,7 @@ after(async () => {
 })
 
 const STUDENT_KEYS = ['id', 'rank', 'name', 'school', 'city', 'score', 'photoUrl', 'createdAt', 'updatedAt']
-const TIER_KEYS = ['id', 'name', 'subtitle', 'rankFrom', 'rankTo', 'prize', 'prizeAmount', 'podiumPrizes', 'podiumMode', 'style', 'color', 'icon', 'sortDirection', 'gridPageCounts', 'schoolNames', 'winnerSchool', 'order', 'enabled']
+const TIER_KEYS = ['id', 'name', 'subtitle', 'medalHeading', 'rankFrom', 'rankTo', 'prize', 'prizeAmount', 'podiumPrizes', 'podiumMode', 'style', 'color', 'icon', 'sortDirection', 'gridPageCounts', 'schoolNames', 'winnerSchool', 'order', 'enabled']
 const SETTINGS_KEYS = [
   'eventTitle', 'eventEdition', 'tagline', 'subTagline', 'organization', 'location', 'eventDate', 'contact', 'logoUrl',
   'handwrittenLines', 'finaleTitle', 'finaleMessage', 'spoilerProtection', 'autoScrollSpeed', 'showRobot', 'quality', 'updatedAt',
@@ -50,6 +50,7 @@ describe('mappers → exact SPEC JSON', () => {
     assert.deepEqual(Object.keys(t), TIER_KEYS)
     assert.equal(t.color, '#facc15', 'color normalised to lowercase')
     assert.equal(t.subtitle, '')
+    assert.equal(t.medalHeading, '')
     assert.equal(t.enabled, true)
     assertPlainJson(t)
   })

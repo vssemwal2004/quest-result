@@ -21,12 +21,13 @@ type Form = Omit<TierInput, 'rankFrom' | 'rankTo'> & { rankFrom: string; rankTo:
 function toForm(tier: Tier | null, others: Tier[]): Form {
   if (tier) {
     const { name, subtitle, prize, prizeAmount, podiumPrizes, podiumMode, style, color, icon, sortDirection, gridPageCounts, enabled } = tier
-    return { name, subtitle, prize, prizeAmount, podiumPrizes: style === 'podium' ? podiumPrizes ?? null : null, podiumMode: podiumMode ?? 'podium', style: style === 'scroll' ? 'grid' : style, color, icon, sortDirection, gridPageCounts: style === 'grid' || style === 'scroll' ? gridPageCounts : null, schoolNames: tier.schoolNames ?? [], winnerSchool: tier.winnerSchool ?? '', enabled, rankFrom: String(tier.rankFrom), rankTo: String(tier.rankTo) }
+    return { name, subtitle, medalHeading: tier.medalHeading ?? '', prize, prizeAmount, podiumPrizes: style === 'podium' ? podiumPrizes ?? null : null, podiumMode: podiumMode ?? 'podium', style: style === 'scroll' ? 'grid' : style, color, icon, sortDirection, gridPageCounts: style === 'grid' || style === 'scroll' ? gridPageCounts : null, schoolNames: tier.schoolNames ?? [], winnerSchool: tier.winnerSchool ?? '', enabled, rankFrom: String(tier.rankFrom), rankTo: String(tier.rankTo) }
   }
   const usedColors = new Set(others.map((t) => t.color.toLowerCase()))
   return {
     name: '',
     subtitle: '',
+    medalHeading: '',
     rankFrom: '',
     rankTo: '',
     prize: '',
@@ -46,10 +47,11 @@ function toForm(tier: Tier | null, others: Tier[]): Form {
 
 const toInt = (v: string) => (/^\d+$/.test(v.trim()) ? Number(v) : null)
 
-function Section({ title, children }: { title: string; children: ReactNode }) {
+function Section({ title, description, children }: { title: string; description: string; children: ReactNode }) {
   return (
     <fieldset className="space-y-4 border-t border-white/10 pt-5 first:border-t-0 first:pt-0">
       <legend className="mb-1 font-display text-sm font-extrabold uppercase tracking-wider text-white/80">{title}</legend>
+      <p className="text-xs leading-relaxed text-white/55">{description}</p>
       {children}
     </fieldset>
   )
@@ -127,16 +129,18 @@ export function TierEditor({ open, tier, allTiers, onClose, onSaved }: TierEdito
     winner: form.style === 'school' && !schoolNames.includes(form.winnerSchool ?? '') ? 'Select the winning school.' : null,
   }
   const hasErrors = Object.values(errors).some(Boolean)
+  const firstError = Object.values(errors).find((message): message is string => typeof message === 'string') ?? null
+  const saveError = formError ?? serverRangeError ?? (submitted ? firstError : null)
   const show = (msg: string | null) => (submitted ? msg : null)
 
   const submit = async (e: FormEvent) => {
     e.preventDefault()
     setSubmitted(true)
-    if (hasErrors || busy || from === null || to === null) return
+    if (hasErrors || busy || (form.style !== 'school' && (from === null || to === null))) return
     const podiumPrizes = form.style === 'podium' && form.podiumPrizes !== null
       ? podiumRanks.map((rank) => form.podiumPrizes?.find((entry) => entry.rank === rank) ?? { rank, prize: '', prizeAmount: '' })
       : null
-    const input: TierInput = { ...form, name: form.name.trim(), subtitle: subtitle.trim(), rankFrom: form.style === 'school' ? 1 : from, rankTo: form.style === 'school' ? 1 : to, podiumPrizes }
+    const input: TierInput = { ...form, name: form.name.trim(), subtitle: subtitle.trim(), rankFrom: form.style === 'school' ? 1 : from!, rankTo: form.style === 'school' ? 1 : to!, podiumPrizes }
     setBusy(true)
     setFormError(null)
     try {
@@ -189,6 +193,7 @@ export function TierEditor({ open, tier, allTiers, onClose, onSaved }: TierEdito
       }
       footer={
         <>
+          {saveError && <p role="alert" className="w-full text-sm font-medium text-red-200">{saveError}</p>}
           <button type="button" className="btn-ghost" onClick={onClose} disabled={busy}>
             Cancel
           </button>
@@ -200,13 +205,14 @@ export function TierEditor({ open, tier, allTiers, onClose, onSaved }: TierEdito
       }
     >
       <form id={formId} onSubmit={submit} noValidate className="space-y-6">
-        <Section title="Basics">
-          <Field label="Tier name" required error={show(errors.name)}>
-            {(p) => <input {...p} className="input" value={form.name} onChange={(e) => set('name', e.target.value)} placeholder="e.g. Top 20 Stars" maxLength={80} />}
+        <Section title="Basics" description="Set the title and text people will see when this stage begins.">
+          <Field label="Tier name" required hint="Example: Exceptional Performance. This is the main stage heading." error={show(errors.name)}>
+            {(p) => <input {...p} className="input" value={form.name} onChange={(e) => set('name', e.target.value)} placeholder="e.g. Exceptional Performance" maxLength={80} />}
           </Field>
+          {form.style === 'school' && <p className="text-xs leading-relaxed text-white/55">Best School uses the candidate list below, so you do not need to enter a rank range.</p>}
           {form.style !== 'school' && <div>
             <div className="grid grid-cols-2 gap-3">
-              <Field label="Rank from" required>
+              <Field label="Rank from" required hint="First rank in this tier. Example: 4.">
                 {(p) => (
                   <input
                     {...p}
@@ -215,11 +221,11 @@ export function TierEditor({ open, tier, allTiers, onClose, onSaved }: TierEdito
                     inputMode="numeric"
                     value={form.rankFrom}
                     onChange={(e) => set('rankFrom', e.target.value.replace(/[^\d]/g, ''))}
-                    placeholder="4"
+                    placeholder="e.g. 4"
                   />
                 )}
               </Field>
-              <Field label="Rank to" required>
+              <Field label="Rank to" required hint="Last rank in this tier. Example: 20.">
                 {(p) => (
                   <input
                     {...p}
@@ -228,7 +234,7 @@ export function TierEditor({ open, tier, allTiers, onClose, onSaved }: TierEdito
                     inputMode="numeric"
                     value={form.rankTo}
                     onChange={(e) => set('rankTo', e.target.value.replace(/[^\d]/g, ''))}
-                    placeholder="20"
+                    placeholder="e.g. 20"
                   />
                 )}
               </Field>
@@ -241,7 +247,7 @@ export function TierEditor({ open, tier, allTiers, onClose, onSaved }: TierEdito
               rangeValid && <p className="mt-2 text-xs text-white/50">{to - from + 1} rank{to === from ? '' : 's'} in this tier.</p>
             )}
           </div>}
-          <Field label={form.style === 'school' ? 'Text on the medal' : 'Subtitle'} hint={form.style === 'school' ? 'This replaces “Best School” above the medal. Type any title you want.' : subtitleAuto ? 'Generated from the range. Type to customise.' : 'Shown under the tier name. May be empty.'}>
+          <Field label={form.style === 'school' ? 'Opening subtitle' : 'Subtitle'} hint={form.style === 'school' ? 'Shown below the main yellow heading when this stage begins. The medal heading has its own field under Prize.' : subtitleAuto ? 'Example: Ranks 4–20. Auto fills this from the rank range; type to customise.' : 'Example: Rising Stars of 2026. Shown below the stage title; may be empty.'}>
             {(p) => (
               <div className="flex gap-2">
                 <input
@@ -252,7 +258,7 @@ export function TierEditor({ open, tier, allTiers, onClose, onSaved }: TierEdito
                     setSubtitleAuto(false)
                     set('subtitle', e.target.value)
                   }}
-                  placeholder={suggestion || 'Ranks X – Y'}
+                  placeholder={form.style === 'school' ? 'e.g. Exceptional Performance at AI Quest 2026' : suggestion || 'e.g. Ranks 4–20'}
                   maxLength={120}
                 />
                 {form.style !== 'school' && <button
@@ -269,28 +275,32 @@ export function TierEditor({ open, tier, allTiers, onClose, onSaved }: TierEdito
           </Field>
         </Section>
 
-        {form.style === 'school' && <Section title="Best School candidates">
-          <Field label="School names" required hint="Enter 10–20 unique names, one per line." error={show(errors.schools)}>
-            {(p) => <textarea {...p} className="input min-h-48" value={schoolText} onChange={(e) => { setSchoolText(e.target.value); set('schoolNames', e.target.value.split(/\r?\n/).map((name) => name.trim()).filter(Boolean)) }} placeholder="School One\nSchool Two\n…" />}
+        {form.style === 'school' && <Section title="Best School candidates" description="List the schools in the shuffle, then choose the one the audience will see at the reveal.">
+          <Field label="School names" required hint="Example: one full school name per line. Add 10–20 different schools." error={show(errors.schools)}>
+            {(p) => <textarea {...p} className="input min-h-48" value={schoolText} onChange={(e) => { setSchoolText(e.target.value); set('schoolNames', e.target.value.split(/\r?\n/).map((name) => name.trim()).filter(Boolean)) }} placeholder={'e.g. Hometown Girls School\nDelhi Public School Dehradun\nDoon International School\n…'} />}
           </Field>
-          <Field label="Winning school" required error={show(errors.winner)}>
+          <Field label="Winning school" required hint="Select one of the school names above. This name is revealed after the shuffle." error={show(errors.winner)}>
             {(p) => <select {...p} className="input" value={form.winnerSchool ?? ''} onChange={(e) => set('winnerSchool', e.target.value)}>
-              <option value="">Select the school to reveal</option>
+              <option value="">Choose the school to reveal</option>
               {schoolNames.map((school, index) => <option key={`${school}-${index}`} value={school}>{school}</option>)}
             </select>}
           </Field>
         </Section>}
 
-        <Section title="Prize">
-          <Field label={isPodium ? 'Shared prize' : 'Prize'} hint={isPodium ? 'Used for all podium places when individual prizes are off.' : 'e.g. Certificate of Merit + Goodies'}>
-            {(p) => <input {...p} className="input" value={form.prize} onChange={(e) => set('prize', e.target.value)} maxLength={160} />}
+        <Section title="Prize" description="Add the reward text shown with the revealed result. Leave optional fields empty if there is no prize.">
+          {form.style === 'school' && <Field label="Text above the medal" hint="Shown in the bordered box above the gold medal during the shuffle and reveal. Leave blank to use the opening subtitle.">
+            {(p) => <input {...p} className="input" value={form.medalHeading ?? ''} onChange={(e) => set('medalHeading', e.target.value)} placeholder="e.g. AI Quest 2026 Haldwani" maxLength={120} />}
+          </Field>}
+          <Field label={isPodium ? 'Shared prize' : 'Prize'} hint={isPodium ? 'Example: Trophy + Certificate. Used for every podium place unless individual prizes are set.' : 'Example: Certificate of Merit + Trophy. Shown with the winner.'}>
+            {(p) => <input {...p} className="input" value={form.prize} onChange={(e) => set('prize', e.target.value)} placeholder="e.g. Certificate of Merit + Trophy" maxLength={160} />}
           </Field>
-          <Field label={isPodium ? 'Shared prize amount' : 'Prize amount'} hint="Optional free text, e.g. ₹1,00,000 or Up to ₹1 Lakh">
-            {(p) => <input {...p} className="input" value={form.prizeAmount} onChange={(e) => set('prizeAmount', e.target.value)} maxLength={60} />}
+          <Field label={isPodium ? 'Shared prize amount' : 'Prize amount'} hint="Example: ₹25,000 or Up to ₹1 Lakh. This is optional free text.">
+            {(p) => <input {...p} className="input" value={form.prizeAmount} onChange={(e) => set('prizeAmount', e.target.value)} placeholder="e.g. ₹25,000" maxLength={60} />}
           </Field>
           {isPodium && (
             <div className="space-y-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
               <p className="label">Podium prize mode</p>
+              <p className="text-xs leading-relaxed text-white/55">Choose one prize for all places or enter a separate reward for each rank.</p>
               <Segmented<'shared' | 'individual'>
                 ariaLabel="Podium prize mode"
                 value={form.podiumPrizes === null ? 'shared' : 'individual'}
@@ -305,10 +315,10 @@ export function TierEditor({ open, tier, allTiers, onClose, onSaved }: TierEdito
                     return (
                       <div key={rank} className="space-y-3 rounded-xl border border-white/10 bg-navy-950/40 p-3">
                         <p className="font-tech text-sm font-bold text-gold-300">Rank #{rank}</p>
-                        <Field label={`Rank ${rank} prize amount`}>
+                        <Field label={`Rank ${rank} prize amount`} hint="Example: ₹25,000. Leave empty if this rank has no cash prize.">
                           {(p) => <input {...p} className="input" value={entry?.prizeAmount ?? ''} onChange={(e) => setPodiumPrize(rank, 'prizeAmount', e.target.value)} maxLength={60} placeholder="e.g. ₹25,000" />}
                         </Field>
-                        <Field label={`Rank ${rank} prize description`}>
+                        <Field label={`Rank ${rank} prize description`} hint="Example: Scholarship + Trophy. Leave empty if there is no extra reward.">
                           {(p) => <input {...p} className="input" value={entry?.prize ?? ''} onChange={(e) => setPodiumPrize(rank, 'prize', e.target.value)} maxLength={200} placeholder="e.g. Scholarship + Trophy" />}
                         </Field>
                       </div>
@@ -321,7 +331,7 @@ export function TierEditor({ open, tier, allTiers, onClose, onSaved }: TierEdito
           )}
         </Section>
 
-        <Section title="Display style">
+        <Section title="Display style" description="Choose how this tier appears on the big screen. The preview above changes with your selection.">
           <StylePicker value={form.style} onChange={(style) => {
             setForm((current) => ({ ...current, style, rankFrom: style === 'school' ? '1' : current.rankFrom, rankTo: style === 'school' ? '1' : current.rankTo, gridPageCounts: style === 'grid' ? current.gridPageCounts : null, podiumPrizes: style === 'podium' ? current.podiumPrizes : null }))
             setServerRangeError(null)
@@ -378,8 +388,8 @@ export function TierEditor({ open, tier, allTiers, onClose, onSaved }: TierEdito
           )}
         </Section>
 
-        <Section title="Look">
-          <Field label="Accent colour" error={show(errors.color)}>
+        <Section title="Look" description="Pick the colour and icon used on this tier's title card and accents.">
+          <Field label="Accent colour" hint="Example: #38bdf8. Choose a swatch, use the colour picker, or enter a hex code." error={show(errors.color)}>
             {(p) => (
               <div className="flex flex-wrap items-center gap-2">
                 {ACCENT_SWATCHES.map((c) => (
@@ -406,7 +416,7 @@ export function TierEditor({ open, tier, allTiers, onClose, onSaved }: TierEdito
                   />
                   <span className="block h-full w-full bg-[conic-gradient(red,yellow,lime,cyan,blue,magenta,red)] opacity-80" aria-hidden />
                 </label>
-                <input {...p} className="input w-28 font-mono text-sm" value={form.color} onChange={(e) => set('color', e.target.value)} maxLength={7} />
+                <input {...p} className="input w-28 font-mono text-sm" value={form.color} onChange={(e) => set('color', e.target.value)} placeholder="#38bdf8" maxLength={7} />
               </div>
             )}
           </Field>
@@ -438,10 +448,11 @@ export function TierEditor({ open, tier, allTiers, onClose, onSaved }: TierEdito
                 )
               })}
             </div>
+            <p className="mt-1.5 text-xs text-white/50">Choose a symbol for the title card. For example, use the trophy for Champions.</p>
           </div>
         </Section>
 
-        <Section title="Availability">
+        <Section title="Availability" description="Control whether this tier is included in the live results show.">
           <Toggle
             checked={form.enabled}
             onChange={(v) => set('enabled', v)}
@@ -449,12 +460,6 @@ export function TierEditor({ open, tier, allTiers, onClose, onSaved }: TierEdito
             description="Disabled tiers are skipped in the show and ignored by the overlap check."
           />
         </Section>
-
-        {formError && (
-          <p role="alert" className="rounded-xl border border-red-400/30 bg-red-500/10 px-3 py-2 text-sm text-red-200">
-            {formError}
-          </p>
-        )}
       </form>
     </Drawer>
   )

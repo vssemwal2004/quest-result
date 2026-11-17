@@ -46,15 +46,18 @@ describe('tiers', () => {
     assert.equal(res.body.tier.color, '#abcdef')
     assert.equal(res.body.tier.enabled, true)
     assert.equal(res.body.tier.subtitle, '')
+    assert.equal(res.body.tier.medalHeading, '')
   })
 
   it('creates a Best School tier and reveals only the selected school after shuffling', async () => {
     const schoolNames = Array.from({ length: 10 }, (_, index) => `School ${index + 1}`)
-    const input = newTier({ name: 'Best School', style: 'school', rankFrom: 1, rankTo: 1, schoolNames, winnerSchool: 'School 4' })
+    const input = newTier({ name: 'Best School', subtitle: 'Opening subtitle', medalHeading: 'AI Quest 2026 Haldwani', style: 'school', rankFrom: 1, rankTo: 1, schoolNames, winnerSchool: 'School 4' })
     const invalid = await api('POST', '/api/admin/tiers', { json: { ...input, winnerSchool: 'Unknown' } })
     assert.equal(invalid.status, 400)
     const created = await api('POST', '/api/admin/tiers', { json: input })
     assert.equal(created.status, 201)
+    assert.equal(created.body.tier.medalHeading, 'AI Quest 2026 Haldwani')
+    assert.equal(created.body.tier.subtitle, 'Opening subtitle')
     const stageIndex = (await api('GET', '/api/admin/show')).body.stages.findIndex((stage) => stage.title === 'Best School')
     assert.ok(stageIndex > 0)
     for (const step of [0, 1, 2, 3]) {
@@ -62,12 +65,28 @@ describe('tiers', () => {
       const stage = (await srv.request('GET', '/api/public/show')).body.stages[stageIndex]
       assert.deepEqual(stage.students, [])
       assert.deepEqual(stage.tier.schoolNames, schoolNames)
+      assert.equal(stage.tier.medalHeading, 'AI Quest 2026 Haldwani')
       assert.equal('winnerSchool' in stage.tier, false)
     }
     await api('POST', '/api/admin/presentation/goto', { json: { stageIndex, step: 4 } })
     const revealed = (await srv.request('GET', '/api/public/show')).body.stages[stageIndex]
     assert.equal(revealed.students[0].name, 'School 4')
     assert.equal(revealed.stepCount, 5)
+  })
+
+  it('updates an existing tier to Best School without a rank overlap', async () => {
+    const existing = (await tiers()).find((tier) => tier.style === 'grid')
+    const schoolNames = Array.from({ length: 10 }, (_, index) => `School ${index + 1}`)
+    const response = await api('PUT', `/api/admin/tiers/${existing.id}`, {
+      json: { style: 'school', rankFrom: 1, rankTo: 1, schoolNames, winnerSchool: 'School 4', medalHeading: 'AI Quest 2026 Haldwani' },
+    })
+    assert.equal(response.status, 200)
+    assert.equal(response.body.tier.style, 'school')
+    assert.equal(response.body.tier.winnerSchool, 'School 4')
+    assert.equal(response.body.tier.medalHeading, 'AI Quest 2026 Haldwani')
+    assert.deepEqual(response.body.tier.schoolNames, schoolNames)
+    assert.equal((await tiers()).find((tier) => tier.id === existing.id).style, 'school')
+    assert.equal((await tiers()).find((tier) => tier.id === existing.id).medalHeading, 'AI Quest 2026 Haldwani')
   })
 
   it('rejects overlapping enabled tiers with 409 TIER_OVERLAP naming the other tier', async () => {

@@ -13,6 +13,7 @@ const tierSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true, minlength: 1, maxlength: 80 },
     subtitle: { type: String, default: '', trim: true, maxlength: 120 },
+    medalHeading: { type: String, default: '', trim: true, maxlength: 120 },
     rankFrom: tierRank,
     rankTo: tierRank,
     prize: { type: String, default: '', trim: true, maxlength: 200 },

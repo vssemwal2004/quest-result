@@ -34,7 +34,7 @@ export function GridPageEditor({
   return (
     <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
       <p className="label">Grid pages</p>
-      <p className="mb-3 text-xs text-white/55">Pages stay on screen until the presenter presses Next or Previous.</p>
+      <p className="mb-3 text-xs text-white/55">Choose automatic pages or divide this rank range yourself. Each page stays on screen until the presenter presses Next or Previous.</p>
       <Segmented<'auto' | 'manual'>
         ariaLabel="Grid page layout"
         value={manual ? 'manual' : 'auto'}
@@ -60,6 +60,7 @@ export function GridPageEditor({
               min={minPages}
               max={maxPages}
               value={counts.length}
+              placeholder="e.g. 4"
               disabled={!canConfigure}
               onChange={(event) => {
                 const pages = Number(event.target.value)
@@ -68,7 +69,7 @@ export function GridPageEditor({
               className="input w-24 font-tech"
             />
           </label>
-          <p className="text-xs text-white/55">Set the number of ranks on each page. The page ranges follow the reveal order.</p>
+          <p className="text-xs text-white/55">Example: 100 ranks can be four pages of 25. The page counts must add up to the whole rank range.</p>
           <div className="max-h-72 space-y-2 overflow-y-auto pr-1">
             {counts.map((count, index) => {
               const end = direction === 'asc' ? cursor + count - 1 : cursor - count + 1
@@ -83,6 +84,7 @@ export function GridPageEditor({
                     min={1}
                     max={MAX_PER_PAGE}
                     value={count || ''}
+                    placeholder="e.g. 25"
                     onChange={(event) => {
                       const next = [...counts]
                       next[index] = Number(event.target.value)

@@ -32,6 +32,8 @@ export interface Tier {
   id: string
   name: string
   subtitle: string
+  /** Optional text in the box above the Best School medal. */
+  medalHeading?: string
   rankFrom: number
   rankTo: number
   prize: string

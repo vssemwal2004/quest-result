@@ -72,7 +72,7 @@ function MedalPosition({ rank, first, student, active, shuffling, celebrating, r
   const place = rank === first ? 'gold' : rank === first + 1 ? 'silver' : rank === first + 2 ? 'bronze' : 'fourth'
   const prize = student ? prizeFor(tier, rank) : ''
   const sparkCount = place === 'gold' ? 14 : place === 'silver' ? 10 : 7
-  const schoolLabel = tier.subtitle?.trim() || tier.name
+  const schoolLabel = tier.medalHeading?.trim() || tier.subtitle?.trim() || tier.name
   return (
     <motion.div className={`hybrid-medal hybrid-medal--${place} ${active ? 'hybrid-medal--active' : ''} ${student ? 'hybrid-medal--revealed' : ''} ${celebrating ? 'hybrid-medal--celebrating' : ''}`}
       initial={reducedMotion ? false : { opacity: 0, scale: .7, y: 30 }}

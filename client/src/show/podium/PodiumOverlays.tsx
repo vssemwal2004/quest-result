@@ -13,6 +13,8 @@ function rangeLabel(tier: PublicTier): string {
 
 /** Step 0 headline above the empty podium: range, tier name in 3D gold, prize banner. */
 export function PodiumTitle({ tier, reducedMotion }: { tier: PublicTier; reducedMotion: boolean }) {
+  const school = tier.style === 'school'
+  const subtitle = tier.subtitle?.trim()
   return (
     <motion.div
       className="absolute inset-x-0 top-0 z-30 flex flex-col items-center text-center"
@@ -22,15 +24,26 @@ export function PodiumTitle({ tier, reducedMotion }: { tier: PublicTier; reduced
       exit={{ opacity: 0, y: -30, transition: { duration: 0.4 } }}
       transition={{ duration: 0.9, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
     >
-      <span
+      {!school && <span
         className="font-tech font-extrabold uppercase"
         style={{ fontSize: u(1.4), letterSpacing: '0.45em', color: accent(1), textShadow: `0 0 ${u(1)} ${accent(0.8)}` }}
       >
         {rangeLabel(tier)}
-      </span>
-      <h1 className="font-display font-black uppercase" style={{ fontSize: u(4.6), lineHeight: 1.05, marginTop: u(0.3) }}>
+      </span>}
+      <h1 className="font-display font-black uppercase" style={{ fontSize: u(4.6), lineHeight: 1.05, marginTop: u(school ? 1 : 0.3) }}>
         <GoldText3D>{tier.name}</GoldText3D>
       </h1>
+      {school && subtitle && subtitle.toLocaleLowerCase() !== tier.name.trim().toLocaleLowerCase() && <span
+        className="font-tech font-extrabold uppercase"
+        style={{
+          fontSize: u(1.25), letterSpacing: '0.2em', lineHeight: 1.35,
+          maxWidth: u(80), paddingInline: u(2), marginTop: u(1),
+          color: accent(1), textShadow: `0 0 ${u(1)} ${accent(0.8)}`,
+          overflowWrap: 'anywhere',
+        }}
+      >
+        {subtitle}
+      </span>}
       {tier.podiumPrizes === null ? (
         <div style={{ marginTop: u(0.9) }}>
           <PrizeBanner amount={tier.prizeAmount} prize={tier.prize} scale={0.75} />
